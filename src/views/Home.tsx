@@ -4,11 +4,12 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Link } from 'react-router-dom';
 import { ArrowRight, TrendingUp, Heart, Star } from 'lucide-react';
-import { mockProducts } from '../data/mockData';
-import { getPrimaryImage } from '../lib/images';
+import { getPrimaryImage, resolveImageUrl } from '../lib/images';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { DEFAULT_HOMEPAGE_CATEGORIES, HomepageCategory } from '@/data/homepageCategories';
 import { DEFAULT_HOMEPAGE_POPULAR, HomepagePopularItem } from '@/data/homepagePopular';
+import { mapApiProducts } from '@/lib/productMapper';
+import { Product } from '@/types';
 
 export function Home() {
   const { language, t } = useLanguage();
@@ -16,7 +17,7 @@ export function Home() {
   const [categories, setCategories] = React.useState<HomepageCategory[]>([]);
   const [popularItems, setPopularItems] = React.useState<HomepagePopularItem[]>([]);
   const [homeLoading, setHomeLoading] = React.useState(true);
-  const featuredProducts = mockProducts.slice(0, 8);
+  const [featuredProducts, setFeaturedProducts] = React.useState<Product[]>([]);
 
   React.useEffect(() => {
     const loadHomepage = async () => {
@@ -56,8 +57,35 @@ export function Home() {
         setHomeLoading(false);
       }
     };
+    const loadFeatured = async () => {
+      try {
+        const res = await fetch('/api/products?featured=true&take=8');
+        if (res.ok) {
+          const data = await res.json();
+          setFeaturedProducts(mapApiProducts(data));
+        }
+      } catch (error) {
+        console.error('Failed to load featured products', error);
+      }
+    };
     loadHomepage();
+    loadFeatured();
   }, []);
+
+  const productsToShow: HomepagePopularItem[] =
+    homeLoading
+      ? []
+      : popularItems.length
+      ? popularItems
+      : featuredProducts.map((p) => ({
+          id: p.id,
+          titleRu: p.name_ru,
+          titleEn: p.name_en,
+          price: p.price,
+          oldPrice: p.old_price ?? undefined,
+          image: resolveImageUrl(getPrimaryImage(p) || ''),
+          link: `/product/${p.id}`,
+        }));
 
   return (
     <div className="min-h-screen bg-white">
@@ -116,7 +144,7 @@ export function Home() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {(homeLoading ? [] : popularItems).map((item) => {
+            {productsToShow.map((item) => {
               const discount =
                 item.oldPrice && item.oldPrice > item.price
                   ? Math.round(((item.oldPrice - item.price) / item.oldPrice) * 100)
