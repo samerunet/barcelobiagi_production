@@ -116,7 +116,15 @@ export function Footer() {
 									href='tel:+74932123456'
 									className='text-white/60 hover:text-accent-camel transition-colors'
 								>
-									+7 (796) 115-34-56 79611156993
+									+7 (961) 115-69-93
+								</a>
+								<a
+									href='https://wa.me/79611156993'
+									target='_blank'
+									rel='noopener noreferrer'
+									className='text-white/60 hover:text-accent-camel transition-colors underline'
+								>
+									WhatsApp
 								</a>
 							</li>
 							<li className='flex items-center gap-3'>

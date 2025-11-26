@@ -7,6 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { ShippingInfo, PaymentInfo } from '../types';
 import { Check } from 'lucide-react';
+import { YandexDeliveryWidget } from '@/components/YandexDeliveryWidget';
 
 export function Checkout() {
   const { items, getSubtotal, clearCart } = useCart();
@@ -16,6 +17,7 @@ export function Checkout() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [orderNumber, setOrderNumber] = useState<string>('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [pickupPoint, setPickupPoint] = useState<any | null>(null);
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     name: '',
@@ -199,12 +201,12 @@ export function Checkout() {
 
                   <div>
                     <label className="block text-text-dark mb-2">{t('Способ доставки', 'Delivery method')} *</label>
-                    <div className="space-y-3">
-                      <label className="flex items-start gap-3 p-4 border border-border cursor-pointer hover:border-accent-brown transition-colors">
-                        <input
-                          type="radio"
-                          name="delivery"
-                          value="courier"
+                  <div className="space-y-3">
+                    <label className="flex items-start gap-3 p-4 border border-border cursor-pointer hover:border-accent-brown transition-colors">
+                      <input
+                        type="radio"
+                        name="delivery"
+                        value="courier"
                           checked={shippingInfo.delivery_method === 'courier'}
                           onChange={e =>
                             setShippingInfo({
@@ -224,12 +226,12 @@ export function Checkout() {
                         </div>
                       </label>
 
-                      <label className="flex items-start gap-3 p-4 border border-border cursor-pointer hover:border-accent-brown transition-colors">
-                        <input
-                          type="radio"
-                          name="delivery"
-                          value="pickup"
-                          checked={shippingInfo.delivery_method === 'pickup'}
+                    <label className="flex items-start gap-3 p-4 border border-border cursor-pointer hover:border-accent-brown transition-colors">
+                      <input
+                        type="radio"
+                        name="delivery"
+                        value="pickup"
+                        checked={shippingInfo.delivery_method === 'pickup'}
                           onChange={e =>
                             setShippingInfo({
                               ...shippingInfo,
@@ -277,6 +279,33 @@ export function Checkout() {
                         />
                       </div>
                     </>
+                  )}
+
+                  {shippingInfo.delivery_method === 'pickup' && (
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-sm font-medium text-text-dark mb-2">
+                          {t('Выберите пункт выдачи', 'Choose pickup point')}
+                        </h4>
+                        <YandexDeliveryWidget
+                          city={shippingInfo.city}
+                          stationId="YOUR_STATION_GUID_HERE"
+                          weightGrams={3000}
+                          onPointSelect={(point) => setPickupPoint(point)}
+                        />
+                      </div>
+                      {pickupPoint && (
+                        <div className="p-4 border border-accent-brown bg-surface-light rounded">
+                          <p className="text-sm font-medium text-text-dark mb-1">
+                            {t('Вы выбрали пункт выдачи', 'Selected pickup point')}
+                          </p>
+                          <p className="text-sm text-text-dark">{pickupPoint.address?.full_address}</p>
+                          {pickupPoint.id && (
+                            <p className="text-xs text-text-light mt-1">ID: {pickupPoint.id}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   )}
 
                   <Button type="submit" variant="primary" className="w-full">

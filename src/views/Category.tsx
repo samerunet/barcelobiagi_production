@@ -27,9 +27,11 @@ export function Category() {
   const [showInStock, setShowInStock] = useState(false);
 
   const [baseProducts, setBaseProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
         const params = new URLSearchParams();
         if (category && category !== 'all') params.set('category', category);
@@ -45,6 +47,8 @@ export function Category() {
       } catch (error) {
         console.error('Failed to load products', error);
         setBaseProducts([]);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProducts();
@@ -275,7 +279,11 @@ export function Category() {
 
             {/* Product Grid */}
             {/* API NOTE: Grid from GET /api/products?category=...&filters... */}
-            {filteredProducts.length > 0 ? (
+            {loading ? (
+              <div className="flex justify-center py-16">
+                <div className="w-10 h-10 border-4 border-border border-t-black rounded-full animate-spin" />
+              </div>
+            ) : filteredProducts.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
                 {filteredProducts.map(product => (
                   <ProductCard

@@ -39,7 +39,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           
           {/* Logo & Brand */}
-          <Link to="/" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
+        <Link href="/" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
             <div className="w-10 h-10 md:w-12 md:h-12 transition-transform duration-300 group-hover:scale-105">
               <img 
                 src={logoSrc} 
@@ -62,11 +62,11 @@ export function Header() {
             {navItems.map((item) => (
               <Link
                 key={item.path}
-                to={item.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
+              href={item.path as any}
+              className={`text-sm font-medium transition-colors hover:text-primary ${
                   item.highlight
                     ? 'text-error'
-                    : location.pathname === item.path
+                    : pathname === item.path
                     ? 'text-primary'
                     : 'text-gray-700'
                 }`}
@@ -88,7 +88,7 @@ export function Header() {
 
             {/* Admin Access - Temporary visible button */}
             <Link
-              to="/admin/login"
+              href="/admin/login"
               className="hidden md:flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-error hover:text-error/80 hover:bg-error/5 rounded-lg transition-colors"
             >
               Admin
@@ -106,7 +106,7 @@ export function Header() {
 
             {/* Account */}
             <Link
-              to="/dashboard"
+              href="/dashboard"
               className="p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors"
             >
               <User className="w-5 h-5" />
@@ -143,12 +143,12 @@ export function Header() {
             {navItems.map((item) => (
               <Link
                 key={item.path}
-                to={item.path}
+                href={item.path as any}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                   item.highlight
                     ? 'text-error bg-error/5'
-                    : location.pathname === item.path
+                    : pathname === item.path
                     ? 'text-primary bg-primary/5'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
@@ -159,7 +159,7 @@ export function Header() {
             
             {/* Admin Access in Mobile Menu */}
             <Link
-              to="/admin/login"
+              href="/admin/login"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-3 rounded-lg text-sm font-medium text-error bg-error/5 hover:bg-error/10 transition-colors border-t border-gray-200 mt-2 pt-3"
             >

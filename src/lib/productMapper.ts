@@ -1,6 +1,6 @@
 import { Product, ProductImage } from '@/types';
 
-const utfsUrlFromKey = (key?: string) => (key ? `https://utfs.io/f/${key}` : '');
+export const utfsUrlFromKey = (key?: string) => (key ? `https://utfs.io/f/${key}` : '');
 
 export function mapApiProduct(api: any): Product {
   const images: Array<string | ProductImage> =
@@ -29,7 +29,7 @@ export function mapApiProduct(api: any): Product {
     categoryId: api.categoryId,
     status: api.status,
     featured: api.featured,
-    tags: api.tags ?? [],
+    tags: (api.tags ?? []).map((t: any) => (typeof t === 'string' ? t : t.slug)).filter(Boolean),
     stock_total: api.stockTotal ?? 0,
     stock_low_threshold: api.stockLowThreshold ?? 3,
     sizes: undefined,

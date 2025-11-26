@@ -11,12 +11,13 @@ export const uploadRouter = {
       z
         .object({
           productId: z.string().optional(),
+          customId: z.string().optional(),
         })
         .optional()
     )
     .middleware(async ({ input }) => {
       // TODO: replace with real auth; for now mark uploads as coming from admin.
-      return { userId: 'admin', productId: input?.productId ?? null };
+      return { userId: 'admin', productId: input?.productId ?? null, customId: input?.customId ?? null };
     })
     .onUploadComplete(async ({ file, metadata }) => {
       return {
@@ -24,6 +25,7 @@ export const uploadRouter = {
         fileUrl: file.ufsUrl ?? file.url,
         productId: metadata.productId,
         uploadedBy: metadata.userId,
+        customId: metadata.customId ?? null,
       };
     }),
 } satisfies FileRouter;

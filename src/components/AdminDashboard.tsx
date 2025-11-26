@@ -57,6 +57,7 @@ interface Product {
   description_ru: string;
   description_en: string;
   category: string;
+  categoryId?: string;
   price: number;
   original_price?: number;
   image: string;
@@ -66,6 +67,14 @@ interface Product {
   inStock: boolean;
   active: boolean;
   featured: boolean;
+  tags?: string[];
+  variants?: Array<{
+    id?: string;
+    label: string;
+    sku?: string;
+    stock?: number;
+    price?: number;
+  }>;
 }
 
 interface Order {
@@ -96,6 +105,13 @@ interface Manager {
   role: 'owner' | 'manager' | 'viewer';
   status: 'active' | 'inactive';
   lastLogin: string;
+}
+
+interface CategoryOption {
+  id: string;
+  nameRu: string;
+  nameEn: string;
+  slug: string;
 }
 
 interface HomepageSettings {
@@ -131,6 +147,9 @@ export function AdminDashboard() {
     categories: [],
     popular: [],
   });
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [inventorySaving, setInventorySaving] = useState(false);
+  const [inventoryError, setInventoryError] = useState<string | null>(null);
   const [homepageLoading, setHomepageLoading] = useState(false);
   const [homepageSaving, setHomepageSaving] = useState(false);
   const [homepageError, setHomepageError] = useState<string | null>(null);
@@ -287,7 +306,7 @@ useEffect(() => {
   };
 
   const fetchDashboardData = async () => {
-    await Promise.all([fetchProducts(), fetchOrders(), fetchCustomers(), fetchUsers(), loadHomepageSettings()]);
+    await Promise.all([fetchProducts(), fetchOrders(), fetchCustomers(), fetchUsers(), fetchCategories(), loadHomepageSettings()]);
   };
 
   const fetchProducts = async () => {
@@ -303,6 +322,7 @@ useEffect(() => {
         description_ru: p.description_ru ?? '',
         description_en: p.description_en ?? '',
         category: p.category || '',
+        categoryId: p.categoryId,
         price: p.price,
         original_price: p.old_price ?? undefined,
         image: getPrimaryProductImage(p) || resolveImageUrl(p.images?.[0]),
@@ -312,10 +332,29 @@ useEffect(() => {
         inStock: p.stock_total > 0,
         active: (p.status ?? 'ACTIVE') === 'ACTIVE',
         featured: !!p.featured,
+        tags: (p.tags ?? []).map((t: any) => (typeof t === 'string' ? t : t.slug)).filter(Boolean),
+        variants: (p.variants ?? []).map((v: any) => ({
+          id: v.id,
+          label: v.label,
+          sku: v.sku ?? '',
+          stock: v.stock ?? 0,
+          price: v.price != null ? Number(v.price) : undefined,
+        })),
       }));
       setProducts(normalized);
     } catch (error) {
       console.error('Failed to load products', error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      setCategories(data);
+    } catch (error) {
+      console.error('Failed to load categories', error);
     }
   };
 
@@ -577,8 +616,12 @@ useEffect(() => {
     setIsUploadingImages(true);
 
     try {
+      const customPrefix = `${selectedProduct?.sku || selectedProduct?.id || 'new'}-${Date.now()}`;
+      const filesWithCustomNames = Array.from(files).map((file, idx) =>
+        new File([file], `${customPrefix}-${idx}-${file.name}`, { type: file.type })
+      );
       const uploads = await uploadFiles('productImageUploader', {
-        files: Array.from(files),
+        files: filesWithCustomNames,
       });
       const urls =
         uploads
@@ -622,8 +665,12 @@ useEffect(() => {
     setCategoryUploadingId(categoryId);
 
     try {
+      const customPrefix = `category-${categoryId}-${Date.now()}`;
+      const file = fileList[0];
       const uploads = await uploadFiles('productImageUploader', {
-        files: [fileList[0]],
+        files: [
+          new File([file], `${customPrefix}-${file.name}`, { type: file.type }),
+        ],
       });
       const upload = uploads?.[0];
       const url = upload ? resolveUploadUrl(upload) : '';
@@ -660,18 +707,91 @@ useEffect(() => {
     setZoomPosition({ x, y });
   };
 
-  const handleSaveProduct = () => {
+  const handleSaveProduct = async () => {
     if (!selectedProduct) return;
-    
-    const index = products.findIndex(p => p.id === selectedProduct.id);
-    if (index >= 0) {
-      const updated = [...products];
-      updated[index] = selectedProduct;
-      setProducts(updated);
+    setInventorySaving(true);
+    setInventoryError(null);
+
+    // Map selectedProduct -> API payload
+    const toImageKey = (img: any) => {
+      if (!img) return null;
+      if (typeof img === 'string') {
+        const parts = img.split('/');
+        const last = parts.pop() ?? '';
+        return last || img;
+      }
+      return img.imageKey || img.key || null;
+    };
+
+    const payload: any = {
+      sku: selectedProduct.sku,
+      nameRu: selectedProduct.name_ru,
+      nameEn: selectedProduct.name_en,
+      descriptionRu: selectedProduct.description_ru,
+      descriptionEn: selectedProduct.description_en,
+      categoryId: selectedProduct.categoryId ?? 'default',
+      price: selectedProduct.price,
+      oldPrice: selectedProduct.original_price ?? null,
+      stockTotal: selectedProduct.stock ?? 0,
+      stockLowThreshold: selectedProduct.lowStockThreshold ?? 3,
+      featured: selectedProduct.featured,
+      status: selectedProduct.active ? 'ACTIVE' : 'HIDDEN',
+      tags: selectedProduct.tags ?? [],
+      variants:
+        selectedProduct.variants && selectedProduct.variants.length
+          ? selectedProduct.variants.map((v) => ({
+              label: v.label,
+              sku: undefined,
+              stock: v.stock ?? 0,
+              price: undefined,
+            }))
+          : undefined,
+      images: (selectedProduct.images ?? [])
+        .filter(Boolean)
+        .map((img, idx) => {
+          const imageKey = toImageKey(img);
+          return imageKey
+            ? {
+                imageKey,
+                isMain: idx === 0,
+                sortOrder: idx,
+              }
+            : null;
+        })
+        .filter(Boolean),
+    };
+
+    const isEdit = Boolean(selectedProduct.id && products.some((p) => p.id === selectedProduct.id));
+    const endpoint = isEdit ? `/api/products/${selectedProduct.id}` : '/api/products';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    console.info('[admin-dashboard] save product payload', { isEdit, endpoint, payload });
+
+    try {
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error('Save product failed', { status: res.status, data, payload });
+        setInventoryError(data?.error || 'Не удалось сохранить товар');
+        return;
+      }
+
+      console.info('Product saved', data);
+      // Refresh list from API to ensure DB state
+      await fetchProducts();
+      setCurrentView('inventory');
+      setSelectedProduct(null);
+    } catch (err) {
+      console.error('Save product error', err);
+      setInventoryError('Ошибка сохранения товара');
+    } finally {
+      setInventorySaving(false);
     }
-    
-    setCurrentView('inventory');
-    setSelectedProduct(null);
   };
 
   const handleOrderStatusChange = (orderId: string, field: 'paymentStatus' | 'deliveryStatus', value: string) => {
@@ -1053,14 +1173,16 @@ useEffect(() => {
         <h2 className="text-2xl font-bold text-gray-900">{t.inventory}</h2>
         <button
           onClick={() => {
+            const defaultCategoryId = categories[0]?.id ?? 'default';
             setSelectedProduct({
-              id: Date.now().toString(),
+              id: '',
               sku: '',
               name_ru: '',
               name_en: '',
               description_ru: '',
               description_en: '',
-              category: 'men',
+              category: categories[0]?.slug ?? 'default',
+              categoryId: defaultCategoryId,
               price: 0,
               image: '',
               images: [],
@@ -1068,7 +1190,9 @@ useEffect(() => {
               lowStockThreshold: 10,
               inStock: true,
               active: true,
-              featured: false
+              featured: false,
+              tags: [],
+              variants: [],
             });
             setCurrentView('inventory-detail');
           }}
@@ -1446,16 +1570,69 @@ useEffect(() => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{t.category} *</label>
                   <select
-                    value={selectedProduct.category}
-                    onChange={(e) => setSelectedProduct({ ...selectedProduct, category: e.target.value })}
+                    value={selectedProduct.categoryId || ''}
+                    onChange={(e) =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        categoryId: e.target.value,
+                        category: categories.find((c) => c.id === e.target.value)?.slug ?? selectedProduct.category,
+                      })
+                    }
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    <option value="men">{t.men}</option>
-                    <option value="women">{t.women}</option>
-                    <option value="kids">{t.kids}</option>
-                    <option value="accessories">{t.accessories}</option>
+                    {!categories.length && <option value="">Нет категорий</option>}
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {language === 'ru' ? c.nameRu : c.nameEn}
+                      </option>
+                    ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Tags toggles */}
+              <div className="grid grid-cols-2 gap-4">
+                <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium text-gray-900">Новинки</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={selectedProduct.tags?.includes('new') ?? false}
+                    onChange={(e) => {
+                      const has = selectedProduct.tags?.includes('new');
+                      const nextTags = has
+                        ? (selectedProduct.tags ?? []).filter((t) => t !== 'new')
+                        : [...(selectedProduct.tags ?? []), 'new'];
+                      setSelectedProduct({ ...selectedProduct, tags: nextTags });
+                    }}
+                    className="sr-only"
+                  />
+                  <div className={`w-10 h-6 rounded-full transition-colors ${selectedProduct.tags?.includes('new') ? 'bg-primary' : 'bg-gray-300'}`}>
+                    <div className={`w-5 h-5 bg-white rounded-full transition-transform duration-200 ${selectedProduct.tags?.includes('new') ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </div>
+                </label>
+
+                <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium text-gray-900">Акции</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={selectedProduct.tags?.includes('sale') ?? false}
+                    onChange={(e) => {
+                      const has = selectedProduct.tags?.includes('sale');
+                      const nextTags = has
+                        ? (selectedProduct.tags ?? []).filter((t) => t !== 'sale')
+                        : [...(selectedProduct.tags ?? []), 'sale'];
+                      setSelectedProduct({ ...selectedProduct, tags: nextTags });
+                    }}
+                    className="sr-only"
+                  />
+                  <div className={`w-10 h-6 rounded-full transition-colors ${selectedProduct.tags?.includes('sale') ? 'bg-primary' : 'bg-gray-300'}`}>
+                    <div className={`w-5 h-5 bg-white rounded-full transition-transform duration-200 ${selectedProduct.tags?.includes('sale') ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </div>
+                </label>
               </div>
 
               {/* Price & Old Price */}
@@ -1479,6 +1656,44 @@ useEffect(() => {
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="15999"
                   />
+                </div>
+              </div>
+
+              {/* Sizes (predefined) */}
+              <div className="space-y-3">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Доступные размеры</h4>
+                  <p className="text-xs text-gray-500">Отметьте размеры. Цена и SKU остаются общими.</p>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {(selectedProduct.category?.includes('women') ? ['35','36','37','38','39','40','41','42'] : ['39','40','41','42','43','44','45','46','47','48']).map((size) => {
+                    const selected = (selectedProduct.variants ?? []).some((v) => v.label === size);
+                    return (
+                      <label
+                        key={size}
+                        className={`flex items-center justify-center px-3 py-2 border rounded-lg text-sm cursor-pointer transition-colors ${
+                          selected ? 'bg-primary text-white border-primary' : 'bg-gray-50 border-gray-200 text-gray-800'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selected}
+                          onChange={(e) => {
+                            const variants = [...(selectedProduct.variants ?? [])];
+                            if (e.target.checked && !selected) {
+                              variants.push({ label: size, stock: selectedProduct.stock ?? 10 });
+                            } else if (!e.target.checked) {
+                              const idx = variants.findIndex((v) => v.label === size);
+                              if (idx >= 0) variants.splice(idx, 1);
+                            }
+                            setSelectedProduct({ ...selectedProduct, variants });
+                          }}
+                          className="sr-only"
+                        />
+                        {size}
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1538,6 +1753,9 @@ useEffect(() => {
               </div>
 
               {/* Action Buttons */}
+              {inventoryError && (
+                <p className="text-sm text-error mb-3">{inventoryError}</p>
+              )}
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => setCurrentView('inventory')}
@@ -1547,10 +1765,15 @@ useEffect(() => {
                 </button>
                 <button
                   onClick={handleSaveProduct}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+                  disabled={inventorySaving}
+                  className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+                    inventorySaving
+                      ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-primary to-primary-dark text-white hover:shadow-lg'
+                  }`}
                 >
                   <Save className="w-5 h-5" />
-                  {t.save}
+                  {inventorySaving ? 'Сохраняем...' : t.save}
                 </button>
               </div>
             </div>

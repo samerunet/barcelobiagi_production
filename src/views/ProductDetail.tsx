@@ -26,13 +26,21 @@ export function ProductDetail() {
 
   const [product, setProduct] = React.useState<Product | null>(null);
   const [related, setRelated] = React.useState<Product[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const fetchProduct = async () => {
+      setLoading(true);
+      setLoadError(null);
       if (!id) return;
       try {
         const res = await fetch(`/api/products/${id}`);
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.error('Failed to load product', res.status);
+          setLoadError(`Status ${res.status}`);
+          return;
+        }
         const data = await res.json();
         setProduct(mapApiProduct(data));
 
@@ -43,6 +51,9 @@ export function ProductDetail() {
         }
       } catch (error) {
         console.error('Failed to load product', error);
+        setLoadError('network');
+      } finally {
+        setLoading(false);
       }
     };
     fetchProduct();
@@ -55,11 +66,20 @@ export function ProductDetail() {
   const [startX, setStartX] = useState(0);
   const [currentRotation, setCurrentRotation] = useState(0);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-border border-t-black rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="mb-4">{t('Товар не найден', 'Product not found')}</h2>
+          {loadError && <p className="text-sm text-text-light mb-4">({loadError})</p>}
           <Button onClick={() => navigate('/')}>
             {t('Вернуться на главную', 'Return to home')}
           </Button>
@@ -346,18 +366,18 @@ export function ProductDetail() {
                   {t('Таблица размеров', 'Size guide')}
                 </button>
               </div>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {sizes.map((size) => (
                   <button
                     key={size.size}
                     onClick={() => setSelectedSize(size.size)}
                     disabled={size.stock === 0}
-                    className={`aspect-square flex items-center justify-center border text-sm transition-all ${
+                    className={`h-11 min-w-[60px] px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
                       selectedSize === size.size
-                        ? 'bg-black text-white border-black'
+                        ? 'bg-black text-white border-black shadow-sm'
                         : size.stock > 0
-                        ? 'border-border hover:border-black'
-                        : 'border-border text-text-light cursor-not-allowed opacity-40'
+                        ? 'border-border hover:border-black bg-white'
+                        : 'border-border text-text-light cursor-not-allowed opacity-40 bg-white'
                     }`}
                   >
                     {size.size}
@@ -382,10 +402,10 @@ export function ProductDetail() {
             </div>
 
             {/* Product Details */}
-            <div className="border-t border-border pt-6 space-y-4 text-sm">
+            <div className="border-t border-border pt-8 space-y-6 text-sm mt-8">
               <div>
                 <p className="text-text-light mb-2">{t('Описание', 'Description')}</p>
-                <p className="text-text-dark">{description}</p>
+                <p className="text-text-dark leading-relaxed">{description}</p>
               </div>
               <div>
                 <p className="text-text-light mb-1">{t('Материал', 'Material')}</p>
@@ -411,17 +431,6 @@ export function ProductDetail() {
                   </p>
                   <p className="text-text-light">
                     {t('По Иванову 1-2 дня', 'In Ivanovo 1-2 days')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <RefreshCw size={20} className="text-text-light flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="text-text-dark font-medium mb-1">
-                    {t('Возврат 14 дней', '14-day returns')}
-                  </p>
-                  <p className="text-text-light">
-                    {t('Бесплатный возврат товара', 'Free returns')}
                   </p>
                 </div>
               </div>
