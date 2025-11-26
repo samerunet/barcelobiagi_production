@@ -26,7 +26,9 @@ export async function POST(request: Request) {
 
   if (scope === 'admin') {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !user.isActive || ![UserRole.ADMIN, UserRole.OWNER].includes(user.role)) {
+    const role = user?.role as UserRole | undefined;
+    const isAdmin = role === UserRole.ADMIN || role === UserRole.OWNER;
+    if (!user || !user.isActive || !isAdmin) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
