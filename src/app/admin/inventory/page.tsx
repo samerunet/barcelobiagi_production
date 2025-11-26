@@ -1,5 +1,5 @@
-import { AdminInventory } from '@/views/admin/AdminInventory';
+import { AdminDashboard } from '@/components/AdminDashboard';
 
 export default function AdminInventoryPage() {
-  return <AdminInventory />;
+  return <AdminDashboard />;
 }

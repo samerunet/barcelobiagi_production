@@ -1,5 +1,5 @@
-import { AdminProductForm } from '@/views/admin/AdminProductForm';
+import { AdminDashboard } from '@/components/AdminDashboard';
 
 export default function AdminNewProductPage() {
-  return <AdminProductForm />;
+  return <AdminDashboard />;
 }

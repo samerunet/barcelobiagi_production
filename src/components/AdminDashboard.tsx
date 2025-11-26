@@ -138,6 +138,7 @@ export function AdminDashboard() {
     categories: true,
     popular: false,
   });
+  const API_HEADERS = { 'Content-Type': 'application/json' };
   
   // Filters & Search
   const [inventoryFilter, setInventoryFilter] = useState<InventoryFilter>('all');
@@ -258,170 +259,15 @@ export function AdminDashboard() {
   // LOAD DATA
   // ============================================================================
 
-  useEffect(() => {
-    // Check authentication
-    const auth = localStorage.getItem('adminAuth');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
-      loadMockData();
-    }
-  }, []);
+useEffect(() => {
+  // Check authentication
+  const auth = localStorage.getItem('adminAuth');
+  if (auth === 'true') {
+    setIsAuthenticated(true);
+    fetchDashboardData();
+  }
+}, []);
 
-  const loadMockData = () => {
-    // Mock products
-    const mockProducts: Product[] = [
-      {
-        id: '1',
-        sku: 'BB-M-001',
-        name_ru: 'Классические оксфорды',
-        name_en: 'Classic Oxfords',
-        description_ru: 'Премиум кожаные оксфорды ручной работы',
-        description_en: 'Premium handcrafted leather oxfords',
-        category: 'men',
-        price: 12999,
-        original_price: 15999,
-        image: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=500',
-        images: [
-          'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=500',
-          'https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=500',
-          'https://images.unsplash.com/photo-1582897085656-c836e1084b1d?w=500'
-        ],
-        stock: 45,
-        lowStockThreshold: 10,
-        inStock: true,
-        active: true,
-        featured: true
-      },
-      {
-        id: '2',
-        sku: 'BB-M-002',
-        name_ru: 'Кожаные ботинки',
-        name_en: 'Leather Boots',
-        description_ru: 'Стильные кожаные ботинки для любого сезона',
-        description_en: 'Stylish leather boots for any season',
-        category: 'men',
-        price: 18999,
-        image: 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=500',
-        images: [
-          'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=500',
-          'https://images.unsplash.com/photo-1605812830455-fa3c0fe1e037?w=500'
-        ],
-        stock: 5,
-        lowStockThreshold: 10,
-        inStock: true,
-        active: true,
-        featured: false
-      },
-      {
-        id: '3',
-        sku: 'BB-W-001',
-        name_ru: 'Элегантные туфли',
-        name_en: 'Elegant Heels',
-        description_ru: 'Женские туфли на каблуке',
-        description_en: 'Women\'s high heel shoes',
-        category: 'women',
-        price: 14999,
-        image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500',
-        images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500'],
-        stock: 30,
-        lowStockThreshold: 10,
-        inStock: true,
-        active: false,
-        featured: true
-      }
-    ];
-    setProducts(mockProducts);
-
-    // Mock orders
-    const mockOrders: Order[] = [
-      {
-        id: 'ORD-001',
-        customerId: 'C1',
-        customerName: 'Иван Петров',
-        date: '2024-01-15',
-        total: 12999,
-        paymentStatus: 'paid',
-        deliveryStatus: 'delivered',
-        items: [{ productId: '1', quantity: 1, price: 12999 }]
-      },
-      {
-        id: 'ORD-002',
-        customerId: 'C2',
-        customerName: 'Anna Smith',
-        date: '2024-01-14',
-        total: 33998,
-        paymentStatus: 'paid',
-        deliveryStatus: 'in-progress',
-        items: [{ productId: '2', quantity: 2, price: 18999 }]
-      },
-      {
-        id: 'ORD-003',
-        customerId: 'C3',
-        customerName: 'Мария Иванова',
-        date: '2024-01-13',
-        total: 14999,
-        paymentStatus: 'unpaid',
-        deliveryStatus: 'in-progress',
-        items: [{ productId: '3', quantity: 1, price: 14999 }]
-      }
-    ];
-    setOrders(mockOrders);
-
-    // Mock customers
-    const mockCustomers: Customer[] = [
-      {
-        id: 'C1',
-        name: 'Иван Петров',
-        email: 'ivan@example.com',
-        orderCount: 5,
-        totalSpent: 64995,
-        emailConsent: true,
-        registeredDate: '2023-12-01'
-      },
-      {
-        id: 'C2',
-        name: 'Anna Smith',
-        email: 'anna@example.com',
-        orderCount: 3,
-        totalSpent: 50997,
-        emailConsent: false,
-        registeredDate: '2024-01-05'
-      },
-      {
-        id: 'C3',
-        name: 'Мария Иванова',
-        email: 'maria@example.com',
-        orderCount: 1,
-        totalSpent: 14999,
-        emailConsent: true,
-        registeredDate: '2024-01-10'
-      }
-    ];
-    setCustomers(mockCustomers);
-
-    // Mock managers
-    const mockManagers: Manager[] = [
-      {
-        id: 'M1',
-        name: 'Admin User',
-        email: 'admin@barcelobiagi.ru',
-        role: 'owner',
-        status: 'active',
-        lastLogin: '2024-01-15 14:30'
-      },
-      {
-        id: 'M2',
-        name: 'Store Manager',
-        email: 'manager@barcelobiagi.ru',
-        role: 'manager',
-        status: 'active',
-        lastLogin: '2024-01-14 10:15'
-      }
-    ];
-    setManagers(mockManagers);
-
-    loadHomepageSettings();
-  };
 
   // ============================================================================
   // HANDLERS
@@ -430,13 +276,93 @@ export function AdminDashboard() {
   const handleLogin = () => {
     localStorage.setItem('adminAuth', 'true');
     setIsAuthenticated(true);
-    loadMockData();
+    fetchDashboardData();
   };
 
   const handleLogout = () => {
     localStorage.removeItem('adminAuth');
     setIsAuthenticated(false);
     navigate('/');
+  };
+
+  const fetchDashboardData = async () => {
+    await Promise.all([fetchProducts(), fetchOrders(), fetchCustomers(), fetchUsers(), loadHomepageSettings()]);
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/products');
+      if (!res.ok) return;
+      const data = await res.json();
+      setProducts(data as Product[]);
+    } catch (error) {
+      console.error('Failed to load products', error);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch('/api/orders');
+      if (!res.ok) return;
+      const data = await res.json();
+      const mapped: Order[] = (data ?? []).map((o: any) => ({
+        id: o.id,
+        orderNumber: o.orderNumber,
+        customerId: o.customerId,
+        customerName: `${o.customer?.firstName ?? ''} ${o.customer?.lastName ?? ''}`.trim() || o.customer?.email || '—',
+        date: o.createdAt,
+        total: Number(o.totalAmount ?? 0),
+        paymentStatus: (o.paymentStatus ?? 'pending').toLowerCase() as Order['paymentStatus'],
+        deliveryStatus: (o.deliveryStatus ?? 'pending').replace('_', '-') as Order['deliveryStatus'],
+        items: (o.items ?? []).map((item: any) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: Number(item.unitPrice ?? 0),
+        })),
+      }));
+      setOrders(mapped);
+    } catch (error) {
+      console.error('Failed to load orders', error);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const res = await fetch('/api/customers');
+      if (!res.ok) return;
+      const data = await res.json();
+      const mapped: Customer[] = (data ?? []).map((c: any) => ({
+        id: c.id,
+        name: `${c.firstName ?? ''} ${c.lastName ?? ''}`.trim() || c.email,
+        email: c.email,
+        orderCount: (c.orders ?? []).length,
+        totalSpent: (c.orders ?? []).reduce((sum: number, o: any) => sum + Number(o.totalAmount ?? 0), 0),
+        emailConsent: c.marketingConsent ?? false,
+        registeredDate: c.createdAt,
+      }));
+      setCustomers(mapped);
+    } catch (error) {
+      console.error('Failed to load customers', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/users');
+      if (!res.ok) return;
+      const data = await res.json();
+      const mapped: Manager[] = (data ?? []).map((u: any) => ({
+        id: u.id,
+        name: u.name ?? u.email,
+        email: u.email,
+        role: u.role.toLowerCase() as Manager['role'],
+        status: u.isActive ? 'active' : 'inactive',
+        lastLogin: u.lastLoginAt ?? '—',
+      }));
+      setManagers(mapped);
+    } catch (error) {
+      console.error('Failed to load users', error);
+    }
   };
 
   const loadHomepageSettings = async () => {
