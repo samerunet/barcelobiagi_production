@@ -510,7 +510,7 @@ useEffect(() => {
               titleRu: product.name_ru,
               titleEn: product.name_en,
               price: product.price,
-              oldPrice: product.old_price ?? null,
+              oldPrice: product.original_price ?? null,
               link: `/product/${product.id}`,
               image: mainImage,
             }
