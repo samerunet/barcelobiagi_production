@@ -36,13 +36,7 @@ export async function POST(request: Request) {
     }
 
     const token = crypto.randomUUID();
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
-
-    return NextResponse.json({
+    const res = NextResponse.json({
       token,
       user: {
         id: user.id,
@@ -51,6 +45,18 @@ export async function POST(request: Request) {
         name: user.name,
       },
     });
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    res.cookies.set('admin_session', token, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24,
+      path: '/',
+    });
+    res.cookies.set('admin_email', user.email, { maxAge: 60 * 60 * 24, path: '/' });
+    return res;
   }
 
   // Customer login
@@ -66,7 +72,7 @@ export async function POST(request: Request) {
 
   const token = crypto.randomUUID();
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     token,
     customer: {
       id: customer.id,
@@ -75,4 +81,12 @@ export async function POST(request: Request) {
       lastName: customer.lastName,
     },
   });
+  res.cookies.set('customer_session', token, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 24,
+    path: '/',
+  });
+  res.cookies.set('customer_email', customer.email, { maxAge: 60 * 60 * 24, path: '/' });
+  res.cookies.set('customer_id', customer.id, { maxAge: 60 * 60 * 24, path: '/' });
+  return res;
 }

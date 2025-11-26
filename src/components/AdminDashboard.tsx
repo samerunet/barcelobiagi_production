@@ -260,9 +260,9 @@ export function AdminDashboard() {
   // ============================================================================
 
 useEffect(() => {
-  // Check authentication
+  const hasCookie = document.cookie.includes('admin_session=');
   const auth = localStorage.getItem('adminAuth');
-  if (auth === 'true') {
+  if (hasCookie || auth === 'true') {
     setIsAuthenticated(true);
     fetchDashboardData();
   }

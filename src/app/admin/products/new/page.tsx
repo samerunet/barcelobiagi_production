@@ -1,5 +1,6 @@
-import { AdminDashboard } from '@/components/AdminDashboard';
+import dynamic from 'next/dynamic';
 
 export default function AdminNewProductPage() {
-  return <AdminDashboard />;
+  const AdminProductForm = dynamic(() => import('@/views/admin/AdminProductForm').then(m => m.AdminProductForm), { ssr: false });
+  return <AdminProductForm />;
 }

@@ -27,8 +27,7 @@ export function AdminLogin() {
         setError(data?.error || 'Неверный email или пароль');
         return;
       }
-      const data = await res.json();
-      localStorage.setItem('adminToken', data.token);
+      await res.json();
       localStorage.setItem('adminAuth', 'true');
       navigate('/admin/dashboard');
     } catch (err) {
