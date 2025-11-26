@@ -34,14 +34,6 @@ export function Footer() {
 			],
 		},
 		// {
-		//   title_ru: 'Компания',
-		//   title_en: 'Company',
-		//   links: [
-		//     { label_ru: 'О франшизе', label_en: 'About Franchise', path: '/about' },
-		//     { label_ru: 'Магазины', label_en: 'Stores', path: '/stores' },
-		//     { label_ru: 'Контакты', label_en: 'Contacts', path: '/contacts' },
-		//   ],
-		// },
 	];
 
 	return (
