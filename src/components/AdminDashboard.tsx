@@ -43,6 +43,7 @@ import { uploadFiles } from '@/lib/uploadthing';
 import { DEFAULT_HOMEPAGE_CATEGORIES, HomepageCategory } from '@/data/homepageCategories';
 import { DEFAULT_HOMEPAGE_POPULAR, HomepagePopularItem } from '@/data/homepagePopular';
 import { getPrimaryImage as getPrimaryProductImage } from '@/lib/images';
+import { mapApiProducts } from '@/lib/productMapper';
 
 // ============================================================================
 // TYPES
@@ -294,7 +295,8 @@ useEffect(() => {
       const res = await fetch('/api/products');
       if (!res.ok) return;
       const data = await res.json();
-      setProducts(data as Product[]);
+      // Normalize API product shape to UI Product type
+      setProducts(mapApiProducts(data));
     } catch (error) {
       console.error('Failed to load products', error);
     }
