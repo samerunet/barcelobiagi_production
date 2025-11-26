@@ -8,8 +8,8 @@ import { MapPin, Phone, Mail, Instagram, Facebook } from "lucide-react";
 import logoIcon from "../assets/777b89e0a4797ae4eae9d495c7db18fa9990282d.png";
 
 export function Footer() {
-const { language, t } = useLanguage();
-const pathname = usePathname() ?? "";
+	const { language, t } = useLanguage();
+	const pathname = usePathname() ?? "";
 	const logoSrc =
 		typeof logoIcon === "string" ? logoIcon : (logoIcon as { src: string }).src;
 
@@ -42,7 +42,7 @@ const pathname = usePathname() ?? "";
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16'>
 					{/* Brand */}
 					<div className='lg:col-span-1'>
-						<Link to='/' className='flex items-center gap-3 mb-6 group'>
+						<Link href='/' className='flex items-center gap-3 mb-6 group'>
 							<div className='w-12 h-12 transition-transform group-hover:scale-110'>
 								<img
 									src={logoSrc}
@@ -78,7 +78,7 @@ const pathname = usePathname() ?? "";
 								{section.links.map((link, linkIndex) => (
 									<li key={linkIndex}>
 										<Link
-											to={link.path}
+											href={link.path}
 											className='text-white/60 text-sm hover:text-accent-camel transition-colors inline-block'
 										>
 											{language === "ru" ? link.label_ru : link.label_en}
@@ -180,13 +180,13 @@ const pathname = usePathname() ?? "";
 					</div>
 					<div className='flex flex-wrap gap-6 text-xs'>
 						<Link
-							to='/privacy'
+							href='/privacy'
 							className='text-white/60 hover:text-accent-camel transition-colors'
 						>
 							{t("Политика конфиденциальности", "Privacy Policy")}
 						</Link>
 						<Link
-							to='/terms'
+							href='/terms'
 							className='text-white/60 hover:text-accent-camel transition-colors'
 						>
 							{t("Условия использования", "Terms of Use")}
