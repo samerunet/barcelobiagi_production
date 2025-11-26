@@ -42,6 +42,7 @@ import {
 import { uploadFiles } from '@/lib/uploadthing';
 import { DEFAULT_HOMEPAGE_CATEGORIES, HomepageCategory } from '@/data/homepageCategories';
 import { DEFAULT_HOMEPAGE_POPULAR, HomepagePopularItem } from '@/data/homepagePopular';
+import { getPrimaryImage as getPrimaryProductImage } from '@/lib/images';
 
 // ============================================================================
 // TYPES
@@ -540,6 +541,36 @@ export function AdminDashboard() {
     setHomepageSettings((prev) => ({
       ...prev,
       popular: prev.popular.filter((item) => item.id !== id),
+    }));
+  };
+
+  const handlePopularProductSelect = (itemId: string, productId: string) => {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
+    const mainImage =
+      getPrimaryProductImage({
+        ...product,
+        images: product.images,
+        nameRu: product.name_ru,
+        nameEn: product.name_en,
+      } as any) || product.images?.[0] || '';
+
+    setHomepageSettings((prev) => ({
+      ...prev,
+      popular: prev.popular.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              productId,
+              titleRu: product.name_ru,
+              titleEn: product.name_en,
+              price: product.price,
+              oldPrice: product.old_price ?? null,
+              link: `/product/${product.id}`,
+              image: mainImage,
+            }
+          : item
+      ),
     }));
   };
 
@@ -2225,14 +2256,21 @@ export function AdminDashboard() {
                           )}
                         </label>
                       </div>
-                      <input
-                        type="text"
-                        value={item.image}
-                        readOnly
-                        placeholder="URL появится после загрузки"
-                        className="w-full mt-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      value={item.image}
+                      onChange={(e) =>
+                        setHomepageSettings((prev) => ({
+                          ...prev,
+                          popular: prev.popular.map((p) =>
+                            p.id === item.id ? { ...p, image: e.target.value } : p
+                          ),
+                        }))
+                      }
+                      placeholder="URL появится после загрузки или выберите товар"
+                      className="w-full mt-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
 
                     {/* Text fields */}
                     <div className="space-y-3">
@@ -2269,14 +2307,31 @@ export function AdminDashboard() {
                               ),
                             }))
                           }
-                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {language === 'ru' ? 'Ссылка' : 'Link'}
-                        </label>
-                        <input
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {language === 'ru' ? 'Связать с товаром' : 'Link to inventory item'}
+                    </label>
+                    <select
+                      value={item.productId || ''}
+                      onChange={(e) => handlePopularProductSelect(item.id, e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">{language === 'ru' ? 'Не выбрано' : 'Not selected'}</option>
+                      {products.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name_ru} ({p.sku})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {language === 'ru' ? 'Ссылка' : 'Link'}
+                    </label>
+                    <input
                           type="text"
                           value={item.link}
                           onChange={(e) =>

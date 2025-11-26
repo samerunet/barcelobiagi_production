@@ -6,6 +6,7 @@ export type HomepagePopularItem = {
   oldPrice?: number | null;
   image: string;
   link: string;
+  productId?: string;
 };
 
 export const DEFAULT_HOMEPAGE_POPULAR: HomepagePopularItem[] = [
