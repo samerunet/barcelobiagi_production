@@ -9,18 +9,32 @@ export function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    // Simple demo authentication
-    // In production, this would call your API
-    if (email === 'admin@barcelobiagi.ru' && password === 'Admin!8xEr#2024') {
-      localStorage.setItem('adminToken', 'demo-token');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, scope: 'admin' }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.error || 'Неверный email или пароль');
+        return;
+      }
+      const data = await res.json();
+      localStorage.setItem('adminToken', data.token);
+      localStorage.setItem('adminAuth', 'true');
       navigate('/admin/dashboard');
-    } else {
-      setError('Неверный email или пароль');
+    } catch (err) {
+      setError('Ошибка входа. Попробуйте снова.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,8 +96,8 @@ export function AdminLogin() {
               </div>
             </div>
 
-            <button type="submit" className="btn-primary w-full">
-              Войти
+            <button type="submit" className="btn-primary w-full" disabled={loading}>
+              {loading ? 'Входим...' : 'Войти'}
             </button>
           </form>
 

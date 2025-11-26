@@ -44,6 +44,8 @@ model User {
   isActive     Boolean  @default(true)
   passwordHash String
   lastLoginAt  DateTime?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -56,6 +58,9 @@ model Customer {
   phone            String?
   firstName        String?
   lastName         String?
+  passwordHash     String?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
   marketingConsent Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
