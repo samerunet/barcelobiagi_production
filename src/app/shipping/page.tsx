@@ -1,21 +1,10 @@
-'use client';
-
-import { useLanguage } from '@/context/LanguageContext';
-
 export default function ShippingPage() {
-  const { language } = useLanguage();
-
   return (
-    <div className="min-h-screen bg-surface-light py-12">
-      <div className="container mx-auto px-4">
-        <h1 className="mb-6">
-          {language === 'ru' ? 'Доставка' : 'Shipping'}
-        </h1>
-        <p className="text-text-light">
-          {language === 'ru'
-            ? 'Эта страница находится в разработке.'
-            : 'This page is under development.'}
-        </p>
+    <div className="container mx-auto px-4 py-10 space-y-6">
+      <h1 className="text-3xl font-bold text-gray-900">Доставка и получение</h1>
+      <div className="space-y-4 text-gray-700">
+        <p>Бесплатная доставка с примеркой по всей России.</p>
+        <p>Мы отправляем обувь в любой пункт выдачи Яндекс по всей стране.</p>
       </div>
     </div>
   );

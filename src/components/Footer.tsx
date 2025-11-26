@@ -24,7 +24,7 @@ export function Footer() {
 			title_en: "Customers",
 			links: [
 				{ label_ru: "Доставка", label_en: "Shipping", path: "/shipping" },
-				{ label_ru: "Возврат товара", label_en: "Returns", path: "/returns" },
+				//{ label_ru: "Возврат товара", label_en: "Returns", path: "/returns" },
 				{ label_ru: "Оплата", label_en: "Payment", path: "/payment" },
 				{
 					label_ru: "Размерная сетка",
@@ -116,7 +116,7 @@ export function Footer() {
 									href='tel:+74932123456'
 									className='text-white/60 hover:text-accent-camel transition-colors'
 								>
-									+7 (4932) 12-34-56
+									+7 (796) 115-34-56 79611156993
 								</a>
 							</li>
 							<li className='flex items-center gap-3'>
@@ -125,7 +125,7 @@ export function Footer() {
 									href='mailto:ivanovo@barcelobiagi.ru'
 									className='text-white/60 hover:text-accent-camel transition-colors'
 								>
-									ivanovo@barcelobiagi.ru
+									barcelo-biagi@mail.ru
 								</a>
 							</li>
 						</ul>
@@ -143,7 +143,7 @@ export function Footer() {
 									className='text-accent-camel flex-shrink-0'
 								/>
 								<a
-									href='https://www.instagram.com/barcelobiagi/'
+									href='https://www.instagram.com/rashfordstore/'
 									target='_blank'
 									rel='noopener noreferrer'
 									className='text-white/60 hover:text-accent-camel transition-colors'
