@@ -42,7 +42,7 @@ import {
 import { uploadFiles } from '@/lib/uploadthing';
 import { DEFAULT_HOMEPAGE_CATEGORIES, HomepageCategory } from '@/data/homepageCategories';
 import { DEFAULT_HOMEPAGE_POPULAR, HomepagePopularItem } from '@/data/homepagePopular';
-import { getPrimaryImage as getPrimaryProductImage } from '@/lib/images';
+import { getPrimaryImage as getPrimaryProductImage, resolveImageUrl } from '@/lib/images';
 import { mapApiProducts } from '@/lib/productMapper';
 
 // ============================================================================
@@ -295,8 +295,25 @@ useEffect(() => {
       const res = await fetch('/api/products', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
-      // Normalize API product shape to UI Product type
-      setProducts(mapApiProducts(data));
+      const normalized = mapApiProducts(data).map((p) => ({
+        id: p.id,
+        sku: p.sku,
+        name_ru: p.name_ru,
+        name_en: p.name_en,
+        description_ru: p.description_ru ?? '',
+        description_en: p.description_en ?? '',
+        category: p.category || '',
+        price: p.price,
+        original_price: p.old_price ?? undefined,
+        image: getPrimaryProductImage(p) || resolveImageUrl(p.images?.[0]),
+        images: (p.images ?? []).map((img) => resolveImageUrl(img)),
+        stock: p.stock_total,
+        lowStockThreshold: p.stock_low_threshold,
+        inStock: p.stock_total > 0,
+        active: (p.status ?? 'ACTIVE') === 'ACTIVE',
+        featured: !!p.featured,
+      }));
+      setProducts(normalized);
     } catch (error) {
       console.error('Failed to load products', error);
     }
