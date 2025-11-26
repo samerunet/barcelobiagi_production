@@ -13,32 +13,47 @@ import { DEFAULT_HOMEPAGE_POPULAR, HomepagePopularItem } from '@/data/homepagePo
 export function Home() {
   const { language, t } = useLanguage();
 
-  const [categories, setCategories] = React.useState<HomepageCategory[]>(DEFAULT_HOMEPAGE_CATEGORIES);
-  const [popularItems, setPopularItems] = React.useState<HomepagePopularItem[]>(DEFAULT_HOMEPAGE_POPULAR);
+  const [categories, setCategories] = React.useState<HomepageCategory[]>([]);
+  const [popularItems, setPopularItems] = React.useState<HomepagePopularItem[]>([]);
+  const [homeLoading, setHomeLoading] = React.useState(true);
   const featuredProducts = mockProducts.slice(0, 8);
 
   React.useEffect(() => {
     const loadHomepage = async () => {
       try {
         const res = await fetch('/api/settings?group=home');
-        if (!res.ok) return;
-        const data: Array<{ key: string; value: string }> = await res.json();
-        const storedCategories = data.find((s) => s.key === 'home:categories');
-        if (storedCategories?.value) {
-          const parsed = JSON.parse(storedCategories.value) as HomepageCategory[];
-          if (Array.isArray(parsed) && parsed.length) {
-            setCategories(parsed);
-          }
-        }
-        const storedPopular = data.find((s) => s.key === 'home:popular');
-        if (storedPopular?.value) {
-          const parsed = JSON.parse(storedPopular.value) as HomepagePopularItem[];
-          if (Array.isArray(parsed) && parsed.length) {
-            setPopularItems(parsed);
-          }
+        if (res.ok) {
+          const data: Array<{ key: string; value: string }> = await res.json();
+          const storedCategories = data.find((s) => s.key === 'home:categories');
+          const storedPopular = data.find((s) => s.key === 'home:popular');
+
+          const parsedCategories = storedCategories?.value
+            ? (JSON.parse(storedCategories.value) as HomepageCategory[])
+            : null;
+          const parsedPopular = storedPopular?.value
+            ? (JSON.parse(storedPopular.value) as HomepagePopularItem[])
+            : null;
+
+          setCategories(
+            Array.isArray(parsedCategories) && parsedCategories.length
+              ? parsedCategories
+              : DEFAULT_HOMEPAGE_CATEGORIES
+          );
+          setPopularItems(
+            Array.isArray(parsedPopular) && parsedPopular.length
+              ? parsedPopular
+              : DEFAULT_HOMEPAGE_POPULAR
+          );
+        } else {
+          setCategories(DEFAULT_HOMEPAGE_CATEGORIES);
+          setPopularItems(DEFAULT_HOMEPAGE_POPULAR);
         }
       } catch (error) {
         console.error('Failed to load homepage categories', error);
+        setCategories(DEFAULT_HOMEPAGE_CATEGORIES);
+        setPopularItems(DEFAULT_HOMEPAGE_POPULAR);
+      } finally {
+        setHomeLoading(false);
       }
     };
     loadHomepage();
@@ -54,7 +69,7 @@ export function Home() {
             <h2>{t('Категории', 'Categories')}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {categories.map((category, index) => (
+            {(homeLoading ? [] : categories).map((category, index) => (
               <Link
                 key={category.id ?? index}
                 to={category.link}
@@ -101,7 +116,7 @@ export function Home() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {popularItems.map((item) => {
+            {(homeLoading ? [] : popularItems).map((item) => {
               const discount =
                 item.oldPrice && item.oldPrice > item.price
                   ? Math.round(((item.oldPrice - item.price) / item.oldPrice) * 100)
