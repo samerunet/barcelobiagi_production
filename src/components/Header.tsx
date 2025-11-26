@@ -4,16 +4,16 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { Search, User, ShoppingBag, Menu, X, Heart } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import logoIcon from '../assets/777b89e0a4797ae4eae9d495c7db18fa9990282d.png';
 
 export function Header() {
   const { language, setLanguage, t } = useLanguage();
   const { getTotalItems, setCartOpen } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
+  const pathname = usePathname() ?? '';
   const logoSrc = typeof logoIcon === 'string' ? logoIcon : (logoIcon as { src: string }).src;
-  const pathname = location.pathname ?? '';
 
   // Hide header on admin pages
   if (pathname.startsWith('/admin')) {

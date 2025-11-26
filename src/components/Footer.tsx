@@ -2,14 +2,14 @@
 
 import React from "react";
 import { useLanguage } from "../context/LanguageContext";
-import { Link, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { MapPin, Phone, Mail, Instagram, Facebook } from "lucide-react";
 import logoIcon from "../assets/777b89e0a4797ae4eae9d495c7db18fa9990282d.png";
 
 export function Footer() {
-	const { language, t } = useLanguage();
-	const location = useLocation();
-	const pathname = location.pathname ?? "";
+const { language, t } = useLanguage();
+const pathname = usePathname() ?? "";
 	const logoSrc =
 		typeof logoIcon === "string" ? logoIcon : (logoIcon as { src: string }).src;
 
