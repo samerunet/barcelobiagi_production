@@ -249,4 +249,7 @@ export function AdminProductForm() {
             {loading ? 'Сохранение...' : 'Сохранить'}
           </button>
         </form>
-      </div>\n+    </div>\n+  );\n+}\n*** End Patch"}}) >>
+      </div>
+    </div>
+  );
+}
