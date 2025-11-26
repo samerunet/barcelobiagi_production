@@ -1,0 +1,173 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
+import { useCart } from '../context/CartContext';
+import { Search, User, ShoppingBag, Menu, X, Heart } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import logoIcon from '../assets/777b89e0a4797ae4eae9d495c7db18fa9990282d.png';
+
+export function Header() {
+  const { language, setLanguage, t } = useLanguage();
+  const { getTotalItems, setCartOpen } = useCart();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const logoSrc = typeof logoIcon === 'string' ? logoIcon : (logoIcon as { src: string }).src;
+  const pathname = location.pathname ?? '';
+
+  // Hide header on admin pages
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
+
+  const navItems = [
+    { label_ru: 'Главная', label_en: 'Home', path: '/' },
+    { label_ru: 'Мужчинам', label_en: 'Men', path: '/category/men' },
+    { label_ru: 'Женщинам', label_en: 'Women', path: '/category/women' },
+    { label_ru: 'Премиум', label_en: 'Premium', path: '/category/premium' },
+    { label_ru: 'Новинки', label_en: 'New Arrivals', path: '/category/new' },
+    { label_ru: 'Акции', label_en: 'Sale', path: '/category/sale', highlight: true },
+    { label_ru: 'Аксессуары', label_en: 'Accessories', path: '/category/accessories' },
+  ];
+
+  const totalItems = getTotalItems();
+
+  return (
+    <header className="sticky top-0 z-50 modern-navbar">
+      {/* Main Navbar */}
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          
+          {/* Logo & Brand */}
+          <Link to="/" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
+            <div className="w-10 h-10 md:w-12 md:h-12 transition-transform duration-300 group-hover:scale-105">
+              <img 
+                src={logoSrc} 
+                alt="Barcelo Biagi" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-gray-900 font-bold text-base md:text-lg tracking-tight">
+                BARCELO BIAGI
+              </span>
+              <span className="text-brand-camel text-[9px] md:text-[10px] tracking-widest uppercase hidden sm:block">
+                Brand of Spain Since 1987
+              </span>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  item.highlight
+                    ? 'text-error'
+                    : location.pathname === item.path
+                    ? 'text-primary'
+                    : 'text-gray-700'
+                }`}
+              >
+                {language === 'ru' ? item.label_ru : item.label_en}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Language Switcher */}
+            <button
+              onClick={() => setLanguage(language === 'ru' ? 'en' : 'ru')}
+              className="px-2 md:px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              {language.toUpperCase()}
+            </button>
+
+            {/* Admin Access - Temporary visible button */}
+            <Link
+              to="/admin/login"
+              className="hidden md:flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-error hover:text-error/80 hover:bg-error/5 rounded-lg transition-colors"
+            >
+              Admin
+            </Link>
+
+            {/* Search */}
+            <button className="p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors">
+              <Search className="w-5 h-5" />
+            </button>
+
+            {/* Wishlist */}
+            <button className="hidden sm:flex p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors">
+              <Heart className="w-5 h-5" />
+            </button>
+
+            {/* Account */}
+            <Link
+              to="/dashboard"
+              className="p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+
+            {/* Cart */}
+            <button
+              onClick={() => setCartOpen(true)}
+              className="relative p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-gray-200 bg-white">
+          <nav className="container mx-auto px-4 py-4 space-y-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  item.highlight
+                    ? 'text-error bg-error/5'
+                    : location.pathname === item.path
+                    ? 'text-primary bg-primary/5'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {language === 'ru' ? item.label_ru : item.label_en}
+              </Link>
+            ))}
+            
+            {/* Admin Access in Mobile Menu */}
+            <Link
+              to="/admin/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-3 rounded-lg text-sm font-medium text-error bg-error/5 hover:bg-error/10 transition-colors border-t border-gray-200 mt-2 pt-3"
+            >
+              Admin Panel
+            </Link>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}
