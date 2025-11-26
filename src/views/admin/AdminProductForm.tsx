@@ -85,6 +85,16 @@ export function AdminProductForm() {
         featured: form.featured,
         status: form.status,
       };
+      if (!payload.categoryId) {
+        setError('Выберите категорию');
+        setLoading(false);
+        return;
+      }
+      if (Number.isNaN(payload.price) || Number.isNaN(payload.stockTotal)) {
+        setError('Проверьте цену и склад');
+        setLoading(false);
+        return;
+      }
       if (form.imageKey) {
         payload.images = [
           {
@@ -104,6 +114,7 @@ export function AdminProductForm() {
         setError(data?.error || 'Не удалось сохранить товар');
         return;
       }
+      router.refresh();
       router.push('/admin/inventory');
     } catch (err) {
       setError('Ошибка сохранения товара');

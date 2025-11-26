@@ -35,7 +35,7 @@ export function Category() {
         if (category && category !== 'all') params.set('category', category);
         if (category === 'new') params.set('tag', 'new');
         if (category === 'sale') params.set('tag', 'sale');
-        const res = await fetch(`/api/products?${params.toString()}`);
+        const res = await fetch(`/api/products?${params.toString()}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           setBaseProducts(mapApiProducts(data));

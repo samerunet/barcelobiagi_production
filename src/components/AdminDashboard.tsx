@@ -292,7 +292,7 @@ useEffect(() => {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('/api/products');
+      const res = await fetch('/api/products', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
       // Normalize API product shape to UI Product type
@@ -304,7 +304,7 @@ useEffect(() => {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/orders');
+      const res = await fetch('/api/orders', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
       const mapped: Order[] = (data ?? []).map((o: any) => ({
@@ -330,7 +330,7 @@ useEffect(() => {
 
   const fetchCustomers = async () => {
     try {
-      const res = await fetch('/api/customers');
+      const res = await fetch('/api/customers', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
       const mapped: Customer[] = (data ?? []).map((c: any) => ({
@@ -350,7 +350,7 @@ useEffect(() => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch('/api/users', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
       const mapped: Manager[] = (data ?? []).map((u: any) => ({

@@ -22,7 +22,7 @@ export function Home() {
   React.useEffect(() => {
     const loadHomepage = async () => {
       try {
-        const res = await fetch('/api/settings?group=home');
+        const res = await fetch('/api/settings?group=home', { cache: 'no-store' });
         if (res.ok) {
           const data: Array<{ key: string; value: string }> = await res.json();
           const storedCategories = data.find((s) => s.key === 'home:categories');
@@ -59,7 +59,7 @@ export function Home() {
     };
     const loadFeatured = async () => {
       try {
-        const res = await fetch('/api/products?featured=true&take=8');
+        const res = await fetch('/api/products?featured=true&take=8', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           setFeaturedProducts(mapApiProducts(data));
