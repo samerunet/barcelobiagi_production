@@ -78,7 +78,7 @@ export function Footer() {
 								{section.links.map((link, linkIndex) => (
 									<li key={linkIndex}>
 										<Link
-											href={String(link.path)}
+											href={link.path as any}
 											className='text-white/60 text-sm hover:text-accent-camel transition-colors inline-block'
 										>
 											{language === "ru" ? link.label_ru : link.label_en}
