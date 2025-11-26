@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
-import { getProductById, mockProducts } from '../data/mockData';
+import { mapApiProduct } from '@/lib/productMapper';
+import { Product } from '@/types';
 import { Button } from '../components/Button';
 import { ProductCard } from '../components/ProductCard';
 import { ChevronLeft, Heart, Truck, RefreshCw } from 'lucide-react';
@@ -23,8 +24,29 @@ export function ProductDetail() {
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
-  // API NOTE: GET /api/products/{id} (placeholder)
-  const product = getProductById(id || '');
+  const [product, setProduct] = React.useState<Product | null>(null);
+  const [related, setRelated] = React.useState<Product[]>([]);
+
+  React.useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      try {
+        const res = await fetch(`/api/products/${id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setProduct(mapApiProduct(data));
+
+        const relRes = await fetch(`/api/products?category=${data.category?.slug ?? data.categoryId ?? ''}&take=4`);
+        if (relRes.ok) {
+          const relData = await relRes.json();
+          setRelated(relData.map(mapApiProduct).filter((p: Product) => p.id !== data.id));
+        }
+      } catch (error) {
+        console.error('Failed to load product', error);
+      }
+    };
+    fetchProduct();
+  }, [id]);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
@@ -125,9 +147,7 @@ export function ProductDetail() {
 
   // Get related products
   // API NOTE: Related products from API
-  const relatedProducts = mockProducts
-    .filter(p => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const relatedProducts = related.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-white">

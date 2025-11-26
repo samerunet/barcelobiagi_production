@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { ProductCard } from '../components/ProductCard';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
-import { mockProducts, getProductsByCategory, getProductsByTag } from '../data/mockData';
 import { Product } from '../types';
 import { hasTag } from '../lib/products';
+import { mapApiProducts } from '@/lib/productMapper';
 
 export function Category() {
   const params = useParams();
@@ -26,12 +26,28 @@ export function Category() {
   const [sortBy, setSortBy] = useState<string>('default');
   const [showInStock, setShowInStock] = useState(false);
 
-  // API NOTE: GET /api/products?category={category}&filters=...&sort=... (placeholder)
-  const baseProducts = useMemo(() => {
-    if (category === 'new') return getProductsByTag('new');
-    if (category === 'sale') return getProductsByTag('sale');
-    if (category === 'premium') return mockProducts.filter((p) => hasTag(p, 'premium'));
-    return category ? getProductsByCategory(category) : mockProducts;
+  const [baseProducts, setBaseProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (category && category !== 'all') params.set('category', category);
+        if (category === 'new') params.set('tag', 'new');
+        if (category === 'sale') params.set('tag', 'sale');
+        const res = await fetch(`/api/products?${params.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          setBaseProducts(mapApiProducts(data));
+        } else {
+          setBaseProducts([]);
+        }
+      } catch (error) {
+        console.error('Failed to load products', error);
+        setBaseProducts([]);
+      }
+    };
+    fetchProducts();
   }, [category]);
 
   const getSizes = (product: Product) =>
