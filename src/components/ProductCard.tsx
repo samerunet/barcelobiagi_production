@@ -17,6 +17,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
   const { language } = useLanguage();
+  const [isFav, setIsFav] = React.useState(false);
 
   const name = language === 'ru' ? product.name_ru : product.name_en;
   const isOutOfStock = product.stock_total === 0;
@@ -42,10 +43,11 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         <button
           onClick={(e) => {
             e.stopPropagation();
+            setIsFav((prev) => !prev);
           }}
           className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-surface-light"
         >
-          <Heart size={16} className="text-text-dark" />
+          <Heart size={16} className={isFav ? 'text-error fill-error' : 'text-text-dark'} />
         </button>
 
         {/* Badges - Top Left */}

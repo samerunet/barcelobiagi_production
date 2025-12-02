@@ -28,6 +28,7 @@ export function ProductDetail() {
   const [related, setRelated] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = React.useState(false);
 
   React.useEffect(() => {
     const fetchProduct = async () => {
@@ -186,9 +187,9 @@ export function ProductDetail() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Product Main Section */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 mb-16">
+        <div className="flex flex-col lg:flex-row gap-10 mb-16">
           {/* Left: Image Gallery */}
-          <div>
+          <div className="lg:w-1/2 space-y-4">
             {/* 
               DEV NOTE: 360° Shoe Viewer
               
@@ -208,7 +209,7 @@ export function ProductDetail() {
             
             {/* Main Image - 360° Viewer Frame */}
             <div 
-              className="relative aspect-square max-w-xl bg-white border border-border rounded-2xl mb-4 overflow-hidden select-none mx-auto"
+              className="relative aspect-square max-w-xl bg-white border border-border rounded-2xl overflow-hidden select-none mx-auto"
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
@@ -287,46 +288,36 @@ export function ProductDetail() {
 
             {/* Thumbnail Gallery - Fake 360° Frames Strip */}
             {product.images.length > 1 && (
-              <>
-                {/* Label */}
-                <p className="text-xs text-text-light mb-2 flex items-center gap-2">
+              <div className="space-y-2">
+                <p className="text-xs text-text-light flex items-center gap-2">
                   <RefreshCw size={12} />
                   {t('Все ракурсы', 'All angles')}
                 </p>
-                
-                {/* Thumbnails */}
-                <div className="grid grid-cols-8 gap-1 mb-2">
+                <div className="flex gap-2 overflow-x-auto pb-1">
                   {product.images.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`aspect-square bg-surface-light overflow-hidden border transition-all ${
+                      className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border transition-all ${
                         selectedImage === index
-                          ? 'border-black border-2'
+                          ? 'border-black'
                           : 'border-border hover:border-text-medium'
                       }`}
                     >
                       <ImageWithFallback 
                         src={resolveImageUrl(image)} 
-                        alt={`${name} ${index * (360 / product.images.length)}°`}
-                        className="w-full h-full object-cover" 
+                        alt={`${name} ${index}`}
+                        className="w-full h-full object-contain bg-white" 
                       />
                     </button>
                   ))}
                 </div>
-                
-                {/* Frame counter */}
-                <p className="text-xs text-text-light text-center">
-                  {t('Ракурс', 'Angle')} {selectedImage + 1} {t('из', 'of')} {product.images.length}
-                  <span className="mx-2">•</span>
-                  {Math.round((selectedImage / product.images.length) * 360)}°
-                </p>
-              </>
+              </div>
             )}
           </div>
 
           {/* Right: Product Info */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
+          <div className="lg:w-1/2 lg:sticky lg:top-24 lg:self-start">
             {/* Brand */}
             <p className="text-text-light text-xs uppercase tracking-wide mb-2">Barcelo Biagi</p>
 
@@ -397,9 +388,12 @@ export function ProductDetail() {
               >
                 {t('Добавить в корзину', 'Add to cart')}
               </Button>
-              <button className="w-full border border-border py-3 text-sm font-medium hover:bg-surface-light transition-colors flex items-center justify-center gap-2">
-                <Heart size={18} />
-                {t('В избранное', 'Add to favorites')}
+              <button
+                className="w-full border border-border py-3 text-sm font-medium hover:bg-surface-light transition-colors flex items-center justify-center gap-2"
+                onClick={() => setIsFavorite((prev) => !prev)}
+              >
+                <Heart size={18} className={isFavorite ? 'text-error fill-error' : ''} />
+                {isFavorite ? t('В избранном', 'In favorites') : t('В избранное', 'Add to favorites')}
               </button>
             </div>
 
