@@ -1281,23 +1281,23 @@ useEffect(() => {
                 <p className="font-bold text-gray-900">₽{product.price.toLocaleString()}</p>
                 <p className="text-sm text-gray-500">{t.stockTotal}: {product.stock}</p>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setSelectedProduct(product);
-                    setCurrentView('inventory-detail');
-                  }}
-                  className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
-                >
-                  <Edit className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => handleDeleteProduct(product.id)}
-                  disabled={deletingProductId === product.id}
-                  className="p-2 text-error hover:bg-error/10 rounded-lg transition-all disabled:opacity-50"
-                >
-                  <Trash2 className={`w-5 h-5 ${deletingProductId === product.id ? 'animate-pulse' : ''}`} />
-                </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setSelectedProduct(product);
+                  setCurrentView('inventory-detail');
+                }}
+                className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+              >
+                <Edit className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setConfirmDeleteId(product.id)}
+                disabled={deletingProductId === product.id}
+                className="p-2 text-error hover:bg-error/10 rounded-lg transition-all disabled:opacity-50"
+              >
+                <Trash2 className={`w-5 h-5 ${deletingProductId === product.id ? 'animate-pulse' : ''}`} />
+              </button>
               </div>
             </div>
             
@@ -1413,40 +1413,6 @@ useEffect(() => {
 
     return (
       <div className="space-y-6">
-        {/* Delete confirm modal */}
-        {confirmDeleteId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-            <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {language === 'ru' ? 'Удалить товар?' : 'Delete product?'}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {language === 'ru'
-                  ? 'Это действие нельзя отменить.'
-                  : 'This action cannot be undone.'}
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setConfirmDeleteId(null)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
-                >
-                  {language === 'ru' ? 'Нет' : 'No'}
-                </button>
-                <button
-                  onClick={() => {
-                    const id = confirmDeleteId;
-                    setConfirmDeleteId(null);
-                    if (id) handleDeleteProduct(id);
-                  }}
-                  className="px-4 py-2 rounded-lg bg-error text-white hover:bg-error/90"
-                >
-                  {language === 'ru' ? 'Да' : 'Yes'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Header */}
         <div className="flex items-center gap-4">
           <button
@@ -2770,6 +2736,38 @@ useEffect(() => {
       
       <div className="lg:ml-64 pt-16 lg:pt-0 p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
+          {confirmDeleteId && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+              <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {language === 'ru' ? 'Удалить товар?' : 'Delete product?'}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {language === 'ru'
+                    ? 'Это действие нельзя отменить.'
+                    : 'This action cannot be undone.'}
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                  >
+                    {language === 'ru' ? 'Нет' : 'No'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const id = confirmDeleteId;
+                      setConfirmDeleteId(null);
+                      if (id) handleDeleteProduct(id);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-error text-white hover:bg-error/90"
+                  >
+                    {language === 'ru' ? 'Да' : 'Yes'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {currentView === 'dashboard' && renderDashboard()}
           {currentView === 'inventory' && renderInventory()}
           {currentView === 'inventory-detail' && renderInventoryDetail()}
