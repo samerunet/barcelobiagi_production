@@ -31,11 +31,11 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
       onClick={onClick}
     >
       {/* Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-surface-light mb-3 rounded-2xl">
+      <div className="relative aspect-[3/4] overflow-hidden bg-white mb-3 rounded-2xl border border-gray-100">
         <ImageWithFallback
           src={getPrimaryImage(product)}
           alt={name}
-          className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
         />
         
         {/* Favorite Button */}

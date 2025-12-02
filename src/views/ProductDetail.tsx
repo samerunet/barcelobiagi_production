@@ -208,7 +208,7 @@ export function ProductDetail() {
             
             {/* Main Image - 360° Viewer Frame */}
             <div 
-              className="relative aspect-square bg-surface-light mb-4 overflow-hidden select-none"
+              className="relative aspect-square max-w-xl bg-white border border-border rounded-2xl mb-4 overflow-hidden select-none mx-auto"
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
@@ -218,12 +218,14 @@ export function ProductDetail() {
               onTouchEnd={handleTouchEnd}
               style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
             >
-              <ImageWithFallback
-                src={resolveImageUrl(product.images[selectedImage])}
-                alt={name}
-                className="w-full h-full object-cover pointer-events-none"
-                draggable={false}
-              />
+              <div className="w-full h-full p-4">
+                <ImageWithFallback
+                  src={resolveImageUrl(product.images[selectedImage])}
+                  alt={name}
+                  className="w-full h-full object-contain pointer-events-none"
+                  draggable={false}
+                />
+              </div>
               
               {/* 360° Overlay Control - Bottom Right */}
               <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg flex items-center gap-2">
