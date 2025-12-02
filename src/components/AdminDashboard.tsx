@@ -181,6 +181,8 @@ export function AdminDashboard() {
   const [productUploadError, setProductUploadError] = useState<string | null>(null);
   const [categoryUploadingId, setCategoryUploadingId] = useState<string | null>(null);
   const [categoryUploadError, setCategoryUploadError] = useState<string | null>(null);
+  const [dragImageIndex, setDragImageIndex] = useState<number | null>(null);
+  const [dragOverImageIndex, setDragOverImageIndex] = useState<number | null>(null);
   
   // Form language toggle
   const [formLanguage, setFormLanguage] = useState<'ru' | 'en'>('ru');
@@ -700,6 +702,16 @@ useEffect(() => {
 
   const handleSetMainImage = (index: number) => {
     setMainImageIndex(index);
+  };
+
+  const handleReorderImages = (from: number, to: number) => {
+    if (!selectedProduct) return;
+    const imgs = [...selectedProduct.images];
+    const [moved] = imgs.splice(from, 1);
+    imgs.splice(to, 0, moved);
+    const newMain = mainImageIndex === from ? to : mainImageIndex === to ? from : mainImageIndex;
+    setSelectedProduct({ ...selectedProduct, images: imgs });
+    setMainImageIndex(Math.max(0, newMain));
   };
 
   const handleImageHover = (e: React.MouseEvent<HTMLImageElement>) => {
@@ -1474,10 +1486,29 @@ useEffect(() => {
             {/* Thumbnails */}
             <div className="flex gap-2 overflow-x-auto pb-2 mb-4" style={{ scrollbarWidth: 'thin' }}>
               {selectedProduct.images.map((img, idx) => (
-                <div key={idx} className="relative flex-shrink-0 group">
+                <div
+                  key={idx}
+                  className="relative flex-shrink-0 group"
+                  draggable
+                  onDragStart={() => { setDragImageIndex(idx); setDragOverImageIndex(null); }}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverImageIndex(idx); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (dragImageIndex !== null && dragImageIndex !== idx) {
+                      handleReorderImages(dragImageIndex, idx);
+                    }
+                    setDragImageIndex(null);
+                    setDragOverImageIndex(null);
+                  }}
+                  onDragEnd={() => { setDragImageIndex(null); setDragOverImageIndex(null); }}
+                >
                   <div 
                     className={`w-20 h-20 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                      mainImageIndex === idx ? 'border-primary' : 'border-gray-200 hover:border-gray-400'
+                      dragOverImageIndex === idx
+                        ? 'border-accent'
+                        : mainImageIndex === idx
+                        ? 'border-primary'
+                        : 'border-gray-200 hover:border-gray-400'
                     }`}
                     onMouseEnter={() => setMainImageIndex(idx)}
                     onClick={() => setMainImageIndex(idx)}
