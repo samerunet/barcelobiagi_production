@@ -366,18 +366,18 @@ export function ProductDetail() {
                   {t('Таблица размеров', 'Size guide')}
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {sizes.map((size) => (
-                  <button
-                    key={size.size}
-                    onClick={() => setSelectedSize(size.size)}
-                    disabled={size.stock === 0}
-                    className={`h-11 min-w-[60px] px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                      selectedSize === size.size
-                        ? 'bg-black text-white border-black shadow-sm'
-                        : size.stock > 0
-                        ? 'border-border hover:border-black bg-white'
-                        : 'border-border text-text-light cursor-not-allowed opacity-40 bg-white'
+            <div className="flex flex-wrap gap-2">
+              {sizes.map((size) => (
+                <button
+                  key={size.size}
+                  onClick={() => setSelectedSize(size.size)}
+                  disabled={size.stock === 0}
+                  className={`h-11 min-w-[60px] px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    selectedSize === size.size
+                      ? 'bg-black text-white border-black shadow-sm'
+                      : size.stock > 0
+                      ? 'border-border hover:border-black bg-white'
+                      : 'border-border text-text-light cursor-not-allowed opacity-40 bg-white'
                     }`}
                   >
                     {size.size}

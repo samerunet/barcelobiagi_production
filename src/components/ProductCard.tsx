@@ -27,15 +27,15 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
 
   return (
     <div
-      className={`group bg-white cursor-pointer ${isOutOfStock ? 'opacity-60' : ''}`}
+      className={`group bg-white cursor-pointer rounded-2xl border border-gray-100 shadow-sm transition-transform hover:-translate-y-1 ${isOutOfStock ? 'opacity-60' : ''}`}
       onClick={onClick}
     >
       {/* Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-surface-light mb-2">
+      <div className="relative aspect-[3/4] overflow-hidden bg-surface-light mb-3 rounded-2xl">
         <ImageWithFallback
           src={getPrimaryImage(product)}
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
         />
         
         {/* Favorite Button */}

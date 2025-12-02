@@ -284,7 +284,7 @@ export function Category() {
                 <div className="w-10 h-10 border-4 border-border border-t-black rounded-full animate-spin" />
               </div>
             ) : filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredProducts.map(product => (
                   <ProductCard
                     key={product.id}
