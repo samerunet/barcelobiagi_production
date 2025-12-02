@@ -150,6 +150,7 @@ export function AdminDashboard() {
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [inventorySaving, setInventorySaving] = useState(false);
   const [inventoryError, setInventoryError] = useState<string | null>(null);
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
   const [homepageLoading, setHomepageLoading] = useState(false);
   const [homepageSaving, setHomepageSaving] = useState(false);
   const [homepageError, setHomepageError] = useState<string | null>(null);
@@ -794,6 +795,30 @@ useEffect(() => {
     }
   };
 
+  const handleDeleteProduct = async (productId: string) => {
+    setInventoryError(null);
+    setDeletingProductId(productId);
+    try {
+      const res = await fetch(`/api/products/${productId}`, { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.error('Delete product failed', { status: res.status, data });
+        setInventoryError(data?.error || 'Не удалось удалить товар');
+        return;
+      }
+      if (selectedProduct?.id === productId) {
+        setSelectedProduct(null);
+        setCurrentView('inventory');
+      }
+      await fetchProducts();
+    } catch (err) {
+      console.error('Delete product error', err);
+      setInventoryError('Ошибка удаления товара');
+    } finally {
+      setDeletingProductId(null);
+    }
+  };
+
   const handleOrderStatusChange = (orderId: string, field: 'paymentStatus' | 'deliveryStatus', value: string) => {
     setOrders(orders.map(o => 
       o.id === orderId ? { ...o, [field]: value } : o
@@ -1265,8 +1290,12 @@ useEffect(() => {
                 >
                   <Edit className="w-5 h-5" />
                 </button>
-                <button className="p-2 text-error hover:bg-error/10 rounded-lg transition-all">
-                  <Trash2 className="w-5 h-5" />
+                <button
+                  onClick={() => handleDeleteProduct(product.id)}
+                  disabled={deletingProductId === product.id}
+                  className="p-2 text-error hover:bg-error/10 rounded-lg transition-all disabled:opacity-50"
+                >
+                  <Trash2 className={`w-5 h-5 ${deletingProductId === product.id ? 'animate-pulse' : ''}`} />
                 </button>
               </div>
             </div>
@@ -1357,8 +1386,12 @@ useEffect(() => {
                     >
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-error hover:bg-error/10 rounded-lg transition-all">
-                      <Trash2 className="w-4 h-4" />
+                    <button
+                      onClick={() => handleDeleteProduct(product.id)}
+                      disabled={deletingProductId === product.id}
+                      className="p-2 text-error hover:bg-error/10 rounded-lg transition-all disabled:opacity-50"
+                    >
+                      <Trash2 className={`w-4 h-4 ${deletingProductId === product.id ? 'animate-pulse' : ''}`} />
                     </button>
                   </div>
                 </td>

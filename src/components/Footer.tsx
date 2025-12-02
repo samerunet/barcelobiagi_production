@@ -108,6 +108,7 @@ export function Footer() {
 											"Ivanovo, 8 Marta St., 32"
 										)}
 									</p>
+									<p>{t(" 3 уровень м-н №5 ", "Level 3, Store №5 ")}</p>
 								</div>
 							</li>
 							<li className='flex items-center gap-3'>
@@ -160,12 +161,21 @@ export function Footer() {
 								</a>
 							</li>
 							<li className='flex items-center gap-3'>
-								<Facebook
-									size={18}
+								<svg
+									width='18'
+									height='18'
+									viewBox='0 0 24 24'
+									fill='none'
+									xmlns='http://www.w3.org/2000/svg'
 									className='text-accent-camel flex-shrink-0'
-								/>
+								>
+									<path
+										d='M9.036 14.568L8.82 17.511c.408 0 .585-.174.798-.384l1.914-1.83 3.969 2.91c.726.396 1.239.189 1.428-.66l2.583-12.126c.234-1.089-.408-1.518-1.116-1.248L3.384 9.684c-1.062.426-1.044 1.038-.18 1.314l4.464 1.392 10.368-6.534c.486-.294.93-.132.564.162'
+										fill='currentColor'
+									/>
+								</svg>
 								<a
-									href='https://www.facebook.com/barcelobiagi/'
+									href='https://t.me/barcelobiagi37'
 									target='_blank'
 									rel='noopener noreferrer'
 									className='text-white/60 hover:text-accent-camel transition-colors'
