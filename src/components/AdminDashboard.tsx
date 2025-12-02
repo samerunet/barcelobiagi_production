@@ -151,6 +151,7 @@ export function AdminDashboard() {
   const [inventorySaving, setInventorySaving] = useState(false);
   const [inventoryError, setInventoryError] = useState<string | null>(null);
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [homepageLoading, setHomepageLoading] = useState(false);
   const [homepageSaving, setHomepageSaving] = useState(false);
   const [homepageError, setHomepageError] = useState<string | null>(null);
@@ -1387,7 +1388,7 @@ useEffect(() => {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDeleteProduct(product.id)}
+                      onClick={() => setConfirmDeleteId(product.id)}
                       disabled={deletingProductId === product.id}
                       className="p-2 text-error hover:bg-error/10 rounded-lg transition-all disabled:opacity-50"
                     >
@@ -1412,6 +1413,40 @@ useEffect(() => {
 
     return (
       <div className="space-y-6">
+        {/* Delete confirm modal */}
+        {confirmDeleteId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {language === 'ru' ? 'Удалить товар?' : 'Delete product?'}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {language === 'ru'
+                  ? 'Это действие нельзя отменить.'
+                  : 'This action cannot be undone.'}
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                >
+                  {language === 'ru' ? 'Нет' : 'No'}
+                </button>
+                <button
+                  onClick={() => {
+                    const id = confirmDeleteId;
+                    setConfirmDeleteId(null);
+                    if (id) handleDeleteProduct(id);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-error text-white hover:bg-error/90"
+                >
+                  {language === 'ru' ? 'Да' : 'Yes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center gap-4">
           <button
