@@ -66,7 +66,6 @@ export function ProductDetail() {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [currentRotation, setCurrentRotation] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
 
   if (loading) {
     return (
@@ -501,19 +500,19 @@ export function ProductDetail() {
                   {t('Таблица размеров', 'Size guide')}
                 </button>
               </div>
-            <div className="flex flex-wrap gap-2">
-              {sizes.map((size) => (
-                <button
-                  key={size.size}
-                  onClick={() => setSelectedSize(size.size)}
-                  disabled={size.stock === 0}
-                  className={`h-11 min-w-[60px] px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                    selectedSize === size.size
-                      ? 'bg-black text-white border-black shadow-sm'
-                      : size.stock > 0
-                      ? 'border-border hover:border-black bg-white'
-                      : 'border-border text-text-light cursor-not-allowed opacity-40 bg-white'
-                    }`}
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((size) => (
+                  <button
+                    key={size.size}
+                    onClick={() => setSelectedSize(size.size)}
+                    disabled={size.stock === 0}
+                    className={
+                      selectedSize === size.size
+                        ? 'h-11 min-w-[60px] px-3 py-2 rounded-lg border text-sm font-medium transition-all bg-black text-white border-black shadow-sm'
+                        : size.stock > 0
+                        ? 'h-11 min-w-[60px] px-3 py-2 rounded-lg border text-sm font-medium transition-all border-border hover:border-black bg-white'
+                        : 'h-11 min-w-[60px] px-3 py-2 rounded-lg border text-sm font-medium transition-all border-border text-text-light cursor-not-allowed opacity-40 bg-white'
+                    }
                   >
                     {size.size}
                   </button>
@@ -582,9 +581,8 @@ export function ProductDetail() {
             <h2 className="mb-8">
               {t('С этим товаром покупают', 'You may also like')}
             </h2>
-            {/* API NOTE: Related products from API */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {relatedProducts.map(relatedProduct => (
+              {relatedProducts.map((relatedProduct) => (
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
