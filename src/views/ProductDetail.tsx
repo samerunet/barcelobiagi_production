@@ -66,6 +66,7 @@ export function ProductDetail() {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [currentRotation, setCurrentRotation] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   if (loading) {
     return (
@@ -172,7 +173,6 @@ export function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Back Button */}
       <div className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <button
@@ -186,10 +186,152 @@ export function ProductDetail() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Product Main Section */}
         <div className="flex flex-col lg:flex-row gap-10 mb-16">
-          {/* Left: Image Gallery */}
+          {/* Left: product info */}
           <div className="lg:w-1/2 space-y-4">
+            <div className="space-y-1">
+              <p className="text-xs text-text-light uppercase tracking-wide">Barcelo Biagi</p>
+              <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
+              <p className="text-sm text-text-light capitalize">{product.category}</p>
+            </div>
+
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-bold text-gray-900">{product.price.toLocaleString('ru-RU')} ₽</span>
+              {product.old_price && (
+                <span className="text-text-light line-through">
+                  {product.old_price.toLocaleString('ru-RU')} ₽
+                </span>
+              )}
+            </div>
+
+            {/* Size selection */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold">{t('Выберите размер', 'Select size')}</h4>
+                <button className="text-xs underline hover:no-underline">
+                  {t('Таблица размеров', 'Size guide')}
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((size) => (
+                  <button
+                    key={size.size}
+                    onClick={() => setSelectedSize(size.size)}
+                    disabled={size.stock === 0}
+                    className={`h-10 min-w-[52px] px-3 rounded-lg border text-sm font-medium transition-all ${
+                      selectedSize === size.size
+                        ? 'bg-black text-white border-black'
+                        : size.stock > 0
+                        ? 'border-border hover:border-black bg-white'
+                        : 'border-border text-text-light cursor-not-allowed opacity-40 bg-white'
+                    }`}
+                  >
+                    {size.size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quantity */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{t('Количество', 'Quantity')}</p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="w-10 h-10 border border-border rounded-lg flex items-center justify-center text-xl hover:border-black"
+                >
+                  -
+                </button>
+                <span className="text-lg font-medium">{quantity}</span>
+                <button
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="w-10 h-10 border border-border rounded-lg flex items-center justify-center text-xl hover:border-black"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Button fullWidth onClick={handleAddToCart} disabled={isOutOfStock}>
+                {t('Добавить в корзину', 'Add to cart')}
+              </Button>
+              <button
+                onClick={() => setIsFavorite((prev) => !prev)}
+                className="w-full border border-border py-3 text-sm font-medium hover:bg-surface-light transition-colors flex items-center justify-center gap-2 rounded-lg"
+              >
+                <Heart size={18} className={isFavorite ? 'text-error fill-error' : ''} />
+                {isFavorite ? t('В избранном', 'In favorites') : t('В избранное', 'Add to favorites')}
+              </button>
+            </div>
+
+            <div className="border-t border-border pt-6 space-y-3 text-sm">
+              <div>
+                <p className="font-semibold text-gray-900">{t('Описание', 'Description')}</p>
+                <p className="text-text-dark leading-relaxed">{description}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-text-light">{t('Материал', 'Material')}</p>
+                  <p className="text-text-dark">{material || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-text-light">{t('Цвет', 'Color')}</p>
+                  <p className="text-text-dark">{color || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-text-light">{t('Артикул', 'SKU')}</p>
+                  <p className="text-text-dark">{product.sku}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-6 space-y-3 text-sm">
+              <div className="flex items-start gap-3">
+                <Truck size={20} className="text-text-light flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-gray-900">{t('Доставка', 'Delivery')}</p>
+                  <p className="text-text-dark">{t('Бесплатная доставка по Иваново 1-2 дня', 'Free delivery in Ivanovo 1-2 days')}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-text-light">
+                <Star size={16} className="text-warning" />
+                <span>4.5</span>
+                <span className="text-xs">(23 {t('отзыва', 'reviews')})</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: gallery */}
+          <div className="lg:w-1/2 space-y-4">
+            <div className="relative aspect-square bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+              <ImageWithFallback
+                src={resolveImageUrl(product.images[selectedImage])}
+                alt={name}
+                className="w-full h-full object-contain bg-white"
+              />
+            </div>
+            {product.images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden border transition-all ${
+                      selectedImage === index ? 'border-black shadow-sm' : 'border-border hover:border-text-medium'
+                    }`}
+                  >
+                    <ImageWithFallback
+                      src={resolveImageUrl(image)}
+                      alt={`${name} ${index}`}
+                      className="w-full h-full object-contain bg-white"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
             {/* 
               DEV NOTE: 360° Shoe Viewer
               
