@@ -32,12 +32,22 @@ export function mapApiProduct(api: any): Product {
     tags: (api.tags ?? []).map((t: any) => (typeof t === 'string' ? t : t.slug)).filter(Boolean),
     stock_total: api.stockTotal ?? 0,
     stock_low_threshold: api.stockLowThreshold ?? 3,
-    sizes: undefined,
+    sizes: api?.sizes
+      ? api.sizes.map((s: any) => ({
+          size: s.size ?? s.label ?? s,
+          stock: s.stock != null ? Number(s.stock) : 0,
+        }))
+      : api?.variants
+      ? api.variants.map((v: any) => ({
+          size: v.size ?? v.label,
+          stock: v.stock != null ? Number(v.stock) : 0,
+        }))
+      : undefined,
     variants: api.variants?.map((v: any) => ({
       id: v.id,
       label: v.label,
       sku: v.sku ?? undefined,
-      stock: v.stock ?? 0,
+      stock: v.stock != null ? Number(v.stock) : api.stockTotal ?? 0,
       price: v.price != null ? Number(v.price) : undefined,
     })),
     material_ru: api.materialRu,

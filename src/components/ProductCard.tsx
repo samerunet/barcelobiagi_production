@@ -1,97 +1,103 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Product } from '../types';
-import { useLanguage } from '../context/LanguageContext';
-import { useCart } from '../context/CartContext';
-import { Badge } from './Badge';
-import { ImageWithFallback } from './figma/ImageWithFallback';
-import { Heart } from 'lucide-react';
-import { getPrimaryImage } from '../lib/images';
-import { hasTag } from '../lib/products';
+import * as React from "react";
+import { Product } from "@/types";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { resolveImageUrl } from "@/lib/images";
 
-interface ProductCardProps {
-  product: Product;
-  onClick?: () => void;
-}
+type ProductCardProps = {
+	product: Product;
+	onClick?: () => void;
+};
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
-  const { language } = useLanguage();
-  const [isFav, setIsFav] = React.useState(false);
+	const primaryImage =
+		(product.images && product.images.length > 0 && product.images[0]) || "";
 
-  const name = language === 'ru' ? product.name_ru : product.name_en;
-  const isOutOfStock = product.stock_total === 0;
-  const hasDiscount = product.old_price && product.old_price > product.price;
-  const discountPercent = hasDiscount
-    ? Math.round(((product.old_price! - product.price) / product.old_price!) * 100)
-    : 0;
+	const hasDiscount = product.old_price && product.old_price > product.price;
+	const discountPercent = hasDiscount
+		? Math.round(
+				((product.old_price! - product.price) / product.old_price!) * 100
+		  )
+		: 0;
 
-  return (
-    <div
-      className={`group bg-white cursor-pointer rounded-2xl border border-gray-100 shadow-sm transition-transform hover:-translate-y-1 ${isOutOfStock ? 'opacity-60' : ''}`}
-      onClick={onClick}
-    >
-      {/* Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-white mb-3 rounded-2xl border border-gray-100">
-        <ImageWithFallback
-          src={getPrimaryImage(product)}
-          alt={name}
-          className="w-full h-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
-        />
-        
-        {/* Favorite Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsFav((prev) => !prev);
-          }}
-          className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-surface-light"
-        >
-          <Heart size={16} className={isFav ? 'text-error fill-error' : 'text-text-dark'} />
-        </button>
+	return (
+		<button
+			type='button'
+			onClick={onClick}
+			className='
+        group w-full text-left
+        overflow-hidden rounded-2xl
+        border border-gray-200 bg-white
+        transition-all duration-200
+        hover:border-black/70 hover:shadow-[0_18px_40px_rgba(0,0,0,0.14)]
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-white
+      '
+		>
+			{/* Image area */}
+			<div className='relative aspect-[4/5] w-full bg-[#f7f7f7] overflow-hidden'>
+				<ImageWithFallback
+					src={resolveImageUrl(primaryImage)}
+					alt={product.name_ru}
+					className='
+            w-full h-full object-contain
+            transition-transform duration-300
+            group-hover:scale-105
+          '
+				/>
 
-        {/* Badges - Top Left */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {hasTag(product, 'new') && <Badge type="new" />}
-          {hasDiscount && (
-            <span className="bg-error text-white text-xs px-2 py-1 font-medium">
-              -{discountPercent}%
-            </span>
-          )}
-        </div>
+				{hasDiscount && (
+					<span
+						className='
+              absolute top-2 left-2
+              rounded-full bg-black/80 text-white
+              text-[11px] font-semibold px-2 py-1
+            '
+					>
+						–{discountPercent}%
+					</span>
+				)}
+			</div>
 
-        {/* Out of Stock Overlay */}
-        {isOutOfStock && (
-          <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-            <Badge type="out-of-stock" />
-          </div>
-        )}
-      </div>
+			{/* Black description panel */}
+			<div className='bg-black text-white px-3 py-3 space-y-1.5'>
+				{/* Brand + optional category */}
+				<div className='flex items-center justify-between gap-2'>
+					<span className='text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60'>
+						Barcelo Biagi
+					</span>
+					{product.category && (
+						<span className='text-[10px] uppercase tracking-wide text-white/45 line-clamp-1'>
+							{product.category}
+						</span>
+					)}
+				</div>
 
-      {/* Product Info */}
-      <div className="px-1">
-        {/* Brand/Category - subtle */}
-        <p className="text-text-light text-xs mb-1 uppercase tracking-wide">
-          Barcelo Biagi
-        </p>
+				{/* Name */}
+				<p className='text-sm font-medium leading-snug line-clamp-2'>
+					{product.name_ru}
+				</p>
 
-        {/* Product Name */}
-        <h4 className="text-text-dark text-sm mb-2 line-clamp-2 min-h-[2.5rem]">
-          {name}
-        </h4>
+				{/* Price row */}
+				<div className='mt-1 flex items-baseline justify-between gap-2'>
+					<div className='flex items-baseline gap-2'>
+						<span className='text-base font-semibold'>
+							{product.price.toLocaleString("ru-RU")} ₽
+						</span>
+						{product.old_price && (
+							<span className='text-[11px] line-through text-white/50'>
+								{product.old_price.toLocaleString("ru-RU")} ₽
+							</span>
+						)}
+					</div>
 
-        {/* Price */}
-        <div className="flex items-center gap-2">
-          <span className="text-text-dark font-medium">
-            {product.price.toLocaleString('ru-RU')} ₽
-          </span>
-          {product.old_price && (
-            <span className="text-text-light text-xs line-through">
-              {product.old_price.toLocaleString('ru-RU')} ₽
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+					{hasDiscount && (
+						<span className='rounded-full border border-white/20 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.12em] text-white/80'>
+							sale
+						</span>
+					)}
+				</div>
+			</div>
+		</button>
+	);
 }

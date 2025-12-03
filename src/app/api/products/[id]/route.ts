@@ -81,74 +81,71 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    console.info('[products:PUT] updating product', { id, data, resolvedCategoryId });
-    const updated = await prisma.$transaction(async (tx) => {
-      const product = await tx.product.update({
-        where: { id },
-        data: {
-          sku: data.sku ?? existing.sku,
-          nameEn: data.nameEn ?? existing.nameEn,
-          nameRu: data.nameRu ?? existing.nameRu,
-          descriptionEn: data.descriptionEn ?? existing.descriptionEn,
-          descriptionRu: data.descriptionRu ?? existing.descriptionRu,
-          categoryId: resolvedCategoryId,
-          status: data.status ?? existing.status,
-          featured: data.featured ?? existing.featured,
-          price: data.price ?? existing.price,
-          oldPrice: data.oldPrice ?? existing.oldPrice,
-          stockTotal: data.stockTotal ?? existing.stockTotal,
-          stockLowThreshold: data.stockLowThreshold ?? existing.stockLowThreshold,
-          tags: data.tags
-            ? {
-                set: [],
-                connectOrCreate: data.tags.map((slug) => ({
-                  where: { slug },
-                  create: { slug, labelEn: slug, labelRu: slug },
-                })),
-              }
-            : undefined,
-        },
-      });
+    console.info('[products:PUT] updating product (no transaction)', { id, data, resolvedCategoryId });
 
-      if (data.images) {
-        await tx.productImage.deleteMany({ where: { productId: id } });
-        await tx.productImage.createMany({
-          data: data.images.map((image, index) => ({
+    const product = await prisma.product.update({
+      where: { id },
+      data: {
+        sku: data.sku ?? existing.sku,
+        nameEn: data.nameEn ?? existing.nameEn,
+        nameRu: data.nameRu ?? existing.nameRu,
+        descriptionEn: data.descriptionEn ?? existing.descriptionEn,
+        descriptionRu: data.descriptionRu ?? existing.descriptionRu,
+        categoryId: resolvedCategoryId,
+        status: data.status ?? existing.status,
+        featured: data.featured ?? existing.featured,
+        price: data.price ?? existing.price,
+        oldPrice: data.oldPrice ?? existing.oldPrice,
+        stockTotal: data.stockTotal ?? existing.stockTotal,
+        stockLowThreshold: data.stockLowThreshold ?? existing.stockLowThreshold,
+        tags: data.tags
+          ? {
+              set: [],
+              connectOrCreate: data.tags.map((slug) => ({
+                where: { slug },
+                create: { slug, labelEn: slug, labelRu: slug },
+              })),
+            }
+          : undefined,
+      },
+    });
+
+    if (data.images) {
+      await prisma.productImage.deleteMany({ where: { productId: id } });
+      await prisma.productImage.createMany({
+        data: data.images.map((image, index) => ({
+          productId: id,
+          imageKey: image.imageKey,
+          isMain: image.isMain ?? index === 0,
+          sortOrder: image.sortOrder ?? index,
+          // If you add url column via migration, also store utfsUrlFromKey(image.imageKey)
+        })),
+      });
+    }
+
+    if (data.variants) {
+      await prisma.productVariant.deleteMany({ where: { productId: id } });
+      for (const variant of data.variants) {
+        await prisma.productVariant.create({
+          data: {
             productId: id,
-            imageKey: image.imageKey,
-            isMain: image.isMain ?? index === 0,
-            sortOrder: image.sortOrder ?? index,
-            // If you add url column via migration, also store utfsUrlFromKey(image.imageKey)
-          })),
+            label: variant.label,
+            sku: variant.sku,
+            stock: variant.stock ?? 0,
+            price: variant.price ?? product.price,
+          },
         });
       }
+    }
 
-      if (data.variants) {
-        await tx.productVariant.deleteMany({ where: { productId: id } });
-        await Promise.all(
-          data.variants.map((variant) =>
-            tx.productVariant.create({
-              data: {
-                productId: id,
-                label: variant.label,
-                sku: variant.sku,
-                stock: variant.stock ?? 0,
-                price: variant.price ?? product.price,
-              },
-            })
-          )
-        );
-      }
-
-      return tx.product.findUnique({
-        where: { id },
-        include: {
-          images: { orderBy: { sortOrder: 'asc' } },
-          variants: true,
-          tags: true,
-          category: true,
-        },
-      });
+    const updated = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        images: { orderBy: { sortOrder: 'asc' } },
+        variants: true,
+        tags: true,
+        category: true,
+      },
     });
 
     return NextResponse.json(updated);
@@ -183,7 +180,12 @@ export async function DELETE(_req: Request, context: RouteContext) {
   }
 
   try {
-    await prisma.product.delete({ where: { id } });
+    await prisma.$transaction([
+      prisma.orderItem.deleteMany({ where: { productId: id } }),
+      prisma.productVariant.deleteMany({ where: { productId: id } }),
+      prisma.productImage.deleteMany({ where: { productId: id } }),
+      prisma.product.delete({ where: { id } }),
+    ]);
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Failed to delete product', err);

@@ -32,6 +32,9 @@ export function AdminProductForm() {
     status: 'ACTIVE',
     imageKey: '',
     imageUrl: '',
+    sizes: [
+      '35','36','37','38','39','40','41','42','43','44','45','46','47','48',
+    ].map((size) => ({ size, enabled: false, stock: 0 })),
   });
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -76,6 +79,18 @@ export function AdminProductForm() {
               data.images?.[0]?.url ??
               (data.images?.[0]?.imageKey ? `https://utfs.io/f/${data.images[0].imageKey}` : ''),
             oldPrice: data.oldPrice != null ? String(data.oldPrice) : '',
+            sizes: form.sizes.map((entry) => {
+              const match =
+                Array.isArray(data.variants) &&
+                data.variants.find((v: any) => v.label === entry.size);
+              return match
+                ? {
+                    ...entry,
+                    enabled: true,
+                    stock: match.stock != null ? Number(match.stock) : 0,
+                  }
+                : entry;
+            }),
           });
         }
       } catch (err) {
@@ -142,6 +157,27 @@ export function AdminProductForm() {
             sortOrder: 0,
           },
         ];
+      }
+
+      if (form.sizes && form.sizes.length) {
+        payload.variants = form.sizes
+          .filter((s) => s.enabled)
+          .map((s) => {
+            const parsedStock = Number(s.stock);
+            const fallbackStock =
+              !Number.isNaN(stockTotal) && stockTotal > 0
+                ? stockTotal
+                : !Number.isNaN(parsedStock) && parsedStock > 0
+                ? parsedStock
+                : 1;
+            const finalStock =
+              !Number.isNaN(parsedStock) && parsedStock > 0 ? parsedStock : fallbackStock;
+            return {
+              label: s.size,
+              stock: finalStock,
+              price,
+            };
+          });
       }
       const res = await fetch(isEdit ? `/api/products/${id}` : '/api/products', {
         method: isEdit ? 'PUT' : 'POST',
@@ -308,6 +344,63 @@ export function AdminProductForm() {
                 onChange={(e) => setForm({ ...form, featured: e.target.checked })}
               />
               <label htmlFor={`${formIdPrefix}-featured`} className="text-sm text-gray-700 cursor-pointer">Featured</label>
+            </div>
+          </div>
+
+          {/* Sizes */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <p className="text-sm font-semibold mb-2">Размеры</p>
+            <p className="text-xs text-gray-500 mb-3">
+              Отметьте доступные размеры (женские 35-42, мужские 39-48) и укажите остаток по размеру.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {form.sizes.map((entry, idx) => (
+                <label
+                  key={entry.size}
+                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+                    entry.enabled ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="accent-black"
+                    checked={entry.enabled}
+                    onChange={(e) => {
+                      const enabled = e.target.checked;
+                      setForm((prev) => {
+                        const next = [...prev.sizes];
+                        const fallbackStock =
+                          !Number.isNaN(Number(prev.stockTotal)) && Number(prev.stockTotal) > 0
+                            ? Number(prev.stockTotal)
+                            : 1;
+                        next[idx] = {
+                          ...next[idx],
+                          enabled,
+                          stock: enabled ? (next[idx].stock || fallbackStock) : 0,
+                        };
+                        return { ...prev, sizes: next };
+                      });
+                    }}
+                  />
+                  <span>{entry.size}</span>
+                  {entry.enabled && (
+                    <input
+                      type="number"
+                      min={0}
+                      className="ml-auto w-20 border rounded px-2 py-1 text-xs"
+                      value={entry.stock}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setForm((prev) => {
+                          const next = [...prev.sizes];
+                          next[idx] = { ...next[idx], stock: Number.isNaN(val) ? 0 : val };
+                          return { ...prev, sizes: next };
+                        });
+                      }}
+                    />
+                  )}
+                </label>
+              ))}
             </div>
           </div>
 

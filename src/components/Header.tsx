@@ -7,10 +7,12 @@ import { Search, User, ShoppingBag, Menu, X, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import logoIcon from '../assets/777b89e0a4797ae4eae9d495c7db18fa9990282d.png';
+import { useFavorites } from '@/context/FavoritesContext';
 
 export function Header() {
   const { language, setLanguage, t } = useLanguage();
   const { getTotalItems, setCartOpen } = useCart();
+  const { favorites } = useFavorites();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname() ?? '';
   const logoSrc = typeof logoIcon === 'string' ? logoIcon : (logoIcon as { src: string }).src;
@@ -100,8 +102,17 @@ export function Header() {
             </button>
 
             {/* Wishlist */}
-            <button className="hidden sm:flex p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors">
+            <button
+              className="hidden sm:flex relative p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={() => (window.location.href = '/favorites')}
+              title={t('Избранное', 'Favorites')}
+            >
               <Heart className="w-5 h-5" />
+              {favorites.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {favorites.length}
+                </span>
+              )}
             </button>
 
             {/* Account */}

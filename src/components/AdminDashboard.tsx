@@ -310,7 +310,14 @@ useEffect(() => {
   };
 
   const fetchDashboardData = async () => {
-    await Promise.all([fetchProducts(), fetchOrders(), fetchCustomers(), fetchUsers(), fetchCategories(), loadHomepageSettings()]);
+    await Promise.all([
+      fetchProducts(),
+      fetchOrders(),
+      fetchCustomers(),
+      fetchUsers(),
+      fetchCategories(),
+      loadHomepageSettings(),
+    ]);
   };
 
   const fetchProducts = async () => {
@@ -341,7 +348,7 @@ useEffect(() => {
           id: v.id,
           label: v.label,
           sku: v.sku ?? '',
-          stock: v.stock ?? 0,
+          stock: v.stock != null ? Number(v.stock) : 0,
           price: v.price != null ? Number(v.price) : undefined,
         })),
       }));
@@ -755,9 +762,9 @@ useEffect(() => {
         selectedProduct.variants && selectedProduct.variants.length
           ? selectedProduct.variants.map((v) => ({
               label: v.label,
-              sku: undefined,
-              stock: v.stock ?? 0,
-              price: undefined,
+              sku: v.sku ?? undefined,
+              stock: v.stock != null ? Number(v.stock) : 0,
+              price: v.price != null ? Number(v.price) : undefined,
             }))
           : undefined,
       images: (selectedProduct.images ?? [])
@@ -1732,30 +1739,59 @@ useEffect(() => {
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   {(selectedProduct.category?.includes('women') ? ['35','36','37','38','39','40','41','42'] : ['39','40','41','42','43','44','45','46','47','48']).map((size) => {
-                    const selected = (selectedProduct.variants ?? []).some((v) => v.label === size);
+                    const variants = [...(selectedProduct.variants ?? [])];
+                    const existingIdx = variants.findIndex((v) => v.label === size);
+                    const existing = existingIdx >= 0 ? variants[existingIdx] : null;
+                    const selected = existingIdx >= 0;
+                    const fallbackStock =
+                      typeof selectedProduct.stock === 'number' && selectedProduct.stock > 0
+                        ? selectedProduct.stock
+                        : 1;
                     return (
                       <label
                         key={size}
-                        className={`flex items-center justify-center px-3 py-2 border rounded-lg text-sm cursor-pointer transition-colors ${
-                          selected ? 'bg-primary text-white border-primary' : 'bg-gray-50 border-gray-200 text-gray-800'
+                        className={`flex flex-col gap-1 px-3 py-2 border rounded-lg text-sm cursor-pointer transition-colors ${
+                          selected ? 'bg-primary/90 text-white border-primary' : 'bg-gray-50 border-gray-200 text-gray-800'
                         }`}
                       >
-                        <input
-                          type="checkbox"
-                          checked={selected}
-                          onChange={(e) => {
-                            const variants = [...(selectedProduct.variants ?? [])];
-                            if (e.target.checked && !selected) {
-                              variants.push({ label: size, stock: selectedProduct.stock ?? 10 });
-                            } else if (!e.target.checked) {
-                              const idx = variants.findIndex((v) => v.label === size);
-                              if (idx >= 0) variants.splice(idx, 1);
-                            }
-                            setSelectedProduct({ ...selectedProduct, variants });
-                          }}
-                          className="sr-only"
-                        />
-                        {size}
+                        <div className="flex items-center justify-between gap-2">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              if (e.target.checked && !selected) {
+                                variants.push({ label: size, stock: fallbackStock });
+                              } else if (!e.target.checked && existingIdx >= 0) {
+                                variants.splice(existingIdx, 1);
+                              }
+                              setSelectedProduct({ ...selectedProduct, variants });
+                            }}
+                            className="accent-white"
+                          />
+                          <span className="font-medium">{size}</span>
+                        </div>
+                        {selected && (
+                          <input
+                            type="number"
+                            min={0}
+                            className={`w-full rounded-md border px-2 py-1 text-xs ${
+                              selected ? 'bg-white text-gray-900' : 'bg-gray-100 text-gray-600'
+                            }`}
+                            value={existing?.stock ?? fallbackStock}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              const next = [...variants];
+                              if (existingIdx >= 0) {
+                                next[existingIdx] = {
+                                  ...next[existingIdx],
+                                  stock: Number.isNaN(val) ? 0 : val,
+                                };
+                              }
+                              setSelectedProduct({ ...selectedProduct, variants: next });
+                            }}
+                          />
+                        )}
                       </label>
                     );
                   })}
