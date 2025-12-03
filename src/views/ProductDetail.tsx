@@ -120,12 +120,12 @@ export function ProductDetail() {
 			? product.category
 			: (product as any)?.category?.name || "";
 
-	const rawSizes =
-		(product.sizes && product.sizes.length > 0
-			? product.sizes
-			: (product.variants ?? []).map((variant) => ({
-					size: (variant as any).size || variant.label,
-					stock: variant.stock != null ? Number(variant.stock) : 0,
+  const rawSizes =
+    (product.sizes && product.sizes.length > 0
+      ? product.sizes
+      : (product.variants ?? []).map((variant) => ({
+          size: (variant as any).size || variant.label,
+          stock: variant.stock != null ? Number(variant.stock) : 0,
 			  }))) ?? [];
 
 	const parsedSizes = rawSizes
@@ -147,11 +147,15 @@ export function ProductDetail() {
 						: Array.from({ length: 10 }, (_, i) => String(39 + i)); // 39-48
 			  })();
 
-	const sizes = uniqueSortedSizes.map((size) => {
-		const match = parsedSizes.find((s) => s.size === size);
-		const stock = match?.stock ?? 0;
-		return { size, stock, available: stock > 0 };
-	});
+  const sizes = uniqueSortedSizes.map((size) => {
+    const match = parsedSizes.find((s) => s.size === size);
+    const stock = match?.stock ?? 0;
+    return { size, stock, available: stock > 0 };
+  });
+  const isAccessory =
+    categoryName?.toLowerCase().includes('акс') ||
+    categoryName?.toLowerCase().includes('access');
+  const showSizes = sizes.length > 0 && !isAccessory;
 
 	const images =
 		product.images && product.images.length ? product.images : [""];
@@ -305,41 +309,49 @@ export function ProductDetail() {
 							{/* Size selection */}
 							<div className='space-y-3'>
 								<div className='flex items-center justify-between'>
-									<h3 className='text-sm font-semibold'>
-										{t("Выберите размер", "Choose size")}
-									</h3>
-									<button className='text-xs text-text-light underline hover:no-underline'>
-										{t("Таблица размеров", "Size guide")}
-									</button>
-								</div>
-									<div className='flex flex-wrap gap-2'>
-										{sizes.map((size) => (
-											<button
-												key={size.size}
-												onClick={() => setSelectedSize(size.size)}
-												disabled={size.stock === 0}
-												className={
-													selectedSize === size.size
-														? "h-10 min-w-[56px] px-3 rounded-lg border border-black bg-black text-white text-sm font-semibold tracking-wide shadow-sm"
-														: size.stock > 0
-														? "h-10 min-w-[56px] px-3 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-text-dark hover:border-black hover:-translate-y-0.5 transition-transform shadow-sm"
-														: "h-10 min-w-[56px] px-3 rounded-lg border border-gray-200 bg-gray-50 text-sm font-semibold text-text-light opacity-50 cursor-not-allowed"
-												}
-											>
-												{size.size}
-											</button>
-										))}
-								</div>
-								{isOutOfStock && (
-									<p className='text-xs text-error'>
-										{t("Нет в наличии", "Out of stock")}
-									</p>
-								)}
-								{!isOutOfStock && isLowStock && (
-									<p className='text-xs text-warning'>
-										{t("Осталось мало", "Only a few left")}
-									</p>
-								)}
+										<h3 className='text-sm font-semibold'>
+											{t("Выберите размер", "Choose size")}
+										</h3>
+										<button className='text-xs text-text-light underline hover:no-underline'>
+											{t("Таблица размеров", "Size guide")}
+										</button>
+									</div>
+									{showSizes ? (
+										<>
+											<div className='flex flex-wrap gap-2'>
+												{sizes.map((size) => (
+													<button
+														key={size.size}
+														onClick={() => setSelectedSize(size.size)}
+														disabled={size.stock === 0}
+														className={
+															selectedSize === size.size
+																? "h-10 min-w-[56px] px-3 rounded-lg border border-black bg-black text-white text-sm font-semibold tracking-wide shadow-sm"
+																: size.stock > 0
+																? "h-10 min-w-[56px] px-3 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-text-dark hover:border-black hover:-translate-y-0.5 transition-transform shadow-sm"
+																: "h-10 min-w-[56px] px-3 rounded-lg border border-gray-200 bg-gray-50 text-sm font-semibold text-text-light opacity-50 cursor-not-allowed"
+														}
+													>
+														{size.size}
+													</button>
+												))}
+											</div>
+											{isOutOfStock && (
+												<p className='text-xs text-error'>
+													{t("Нет в наличии", "Out of stock")}
+												</p>
+											)}
+											{!isOutOfStock && isLowStock && (
+												<p className='text-xs text-warning'>
+													{t("Осталось мало", "Only a few left")}
+												</p>
+											)}
+										</>
+									) : (
+										<p className='text-sm text-text-dark'>
+											{t("Размер единый / аксессуар", "One size / accessory")}
+										</p>
+									)}
 							</div>
 
 							{/* CTA */}

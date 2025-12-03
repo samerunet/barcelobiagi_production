@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { Search, User, ShoppingBag, Menu, X, Heart } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import logoIcon from '../assets/777b89e0a4797ae4eae9d495c7db18fa9990282d.png';
 import { useFavorites } from '@/context/FavoritesContext';
 
@@ -14,7 +14,9 @@ export function Header() {
   const { getTotalItems, setCartOpen } = useCart();
   const { favorites } = useFavorites();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const pathname = usePathname() ?? '';
+  const router = useRouter();
   const logoSrc = typeof logoIcon === 'string' ? logoIcon : (logoIcon as { src: string }).src;
 
   // Hide header on admin pages
@@ -97,7 +99,35 @@ export function Header() {
             </Link>
 
             {/* Search */}
-            <button className="p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!searchTerm.trim()) return;
+                router.push(`/category/all?search=${encodeURIComponent(searchTerm.trim())}`);
+                setSearchTerm('');
+                setMobileMenuOpen(false);
+              }}
+              className="hidden md:flex items-center bg-gray-100 rounded-full px-3 py-1.5 border border-gray-200 focus-within:border-primary focus-within:bg-white transition-all"
+            >
+              <Search className="w-4 h-4 text-gray-500" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={t('Поиск...', 'Search...')}
+                className="bg-transparent outline-none text-sm ml-2 w-40"
+              />
+            </form>
+            {/* Mobile search icon */}
+            <button
+              className="md:hidden p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={() => {
+                if (!searchTerm.trim()) return;
+                router.push(`/category/all?search=${encodeURIComponent(searchTerm.trim())}`);
+                setSearchTerm('');
+                setMobileMenuOpen(false);
+              }}
+            >
               <Search className="w-5 h-5" />
             </button>
 

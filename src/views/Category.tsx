@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
 import { useLanguage } from '../context/LanguageContext';
 import { ProductCard } from '../components/ProductCard';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
@@ -16,6 +17,8 @@ export function Category() {
       ? (params as Record<string, string | string[]>).category
       : undefined;
   const category = Array.isArray(categoryParam) ? categoryParam[0] : categoryParam;
+  const searchParams = useSearchParams();
+  const searchQuery = (searchParams?.get('search') ?? '').trim();
   const { language, t } = useLanguage();
   const navigate = useNavigate();
 
@@ -37,6 +40,7 @@ export function Category() {
         if (category && category !== 'all') params.set('category', category);
         if (category === 'new') params.set('tag', 'new');
         if (category === 'sale') params.set('tag', 'sale');
+        if (searchQuery) params.set('search', searchQuery);
         const res = await fetch(`/api/products?${params.toString()}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
@@ -52,7 +56,7 @@ export function Category() {
       }
     };
     fetchProducts();
-  }, [category]);
+  }, [category, searchQuery]);
 
   const getSizes = (product: Product) =>
     product.sizes?.length
@@ -128,6 +132,10 @@ export function Category() {
   };
 
   const currentCategory = categoryInfo[category as keyof typeof categoryInfo] || categoryInfo.men;
+  const effectiveCategory =
+    category === 'all'
+      ? { title_ru: 'Каталог', title_en: 'Catalog' }
+      : currentCategory;
 
   const availableSizes = Array.from(
     new Set(baseProducts.flatMap(p => getSizes(p).map(s => s.size)))
