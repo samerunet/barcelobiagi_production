@@ -86,11 +86,12 @@ export function Home() {
 		loadFeatured();
 	}, []);
 
-	const productsToShow: HomepagePopularItem[] = homeLoading
-		? []
-		: popularItems.length
-		? popularItems
-		: featuredProducts.map((p) => ({
+	let productsToShow: HomepagePopularItem[] = [];
+	if (!homeLoading) {
+		if (popularItems.length) {
+			productsToShow = popularItems;
+		} else {
+			productsToShow = featuredProducts.map((p) => ({
 				id: p.id,
 				titleRu: p.name_ru,
 				titleEn: p.name_en,
@@ -98,7 +99,9 @@ export function Home() {
 				oldPrice: p.old_price ?? undefined,
 				image: resolveImageUrl(getPrimaryImage(p) || ""),
 				link: `/product/${p.id}`,
-		  }));
+			}));
+		}
+	}
 
 	return (
 		<div className='min-h-screen bg-white'>
@@ -164,11 +167,7 @@ export function Home() {
 									  )
 									: 0;
 							return (
-								<Link
-									key={item.id}
-									to={item.link}
-									className='group card card-hover'
-								>
+								<div key={item.id} className='group card card-hover'>
 									{/* Image */}
 									<div className='relative aspect-square overflow-hidden bg-gray-100'>
 										<ImageWithFallback
@@ -186,14 +185,12 @@ export function Home() {
 										</button>
 									</div>
 
-									{/* Info */}
-									<div className='p-3 md:p-4'>
-										<h4 className='text-sm font-medium text-gray-900 mb-1 line-clamp-2'>
-											{language === "ru" ? item.titleRu : item.titleEn}
-										</h4>
-										<p className='text-xs text-gray-500 mb-2 capitalize'>
-											{item.link}
-										</p>
+							{/* Info */}
+							<div className='p-3 md:p-4'>
+								<h4 className='text-sm font-medium text-gray-900 mb-1 line-clamp-2'>
+									{language === "ru" ? item.titleRu : item.titleEn}
+								</h4>
+										<p className='text-xs text-gray-500 mb-2 capitalize'>—</p>
 										<div className='flex items-center justify-between'>
 											<div>
 												<p className='text-lg font-bold text-gray-900'>
@@ -207,7 +204,7 @@ export function Home() {
 											</div>
 										</div>
 									</div>
-								</Link>
+								</div>
 							);
 						})}
 					</div>

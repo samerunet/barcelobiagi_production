@@ -255,27 +255,33 @@ export function ProductDetail() {
 							{/* Brand + title + favorite */}
 								<div className='flex items-start justify-between gap-3'>
 									<div>
-										<p className='text-text-light text-xs uppercase tracking-[0.18em] mb-1'>
-											Barcelo Biagi
+									<p className='text-text-light text-xs uppercase tracking-[0.18em] mb-1'>
+										Barcelo Biagi
+									</p>
+									<h1 className='text-2xl sm:text-3xl font-semibold text-text-dark'>
+										{name}
+									</h1>
+									{categoryName && (
+										<p className='text-xs text-text-light mt-1 capitalize'>
+											{categoryName}
 										</p>
-										<h1 className='text-2xl sm:text-3xl font-semibold text-text-dark'>
-											{name}
-										</h1>
-										{categoryName && (
-											<p className='text-xs text-text-light mt-1 capitalize'>
-												{categoryName}
-											</p>
-										)}
-										{description && (
-											<p className='mt-3 text-sm text-text-dark leading-relaxed'>
-												{description}
-											</p>
-										)}
+									)}
+									{description && (
+										<p className='mt-3 text-sm text-text-dark leading-relaxed'>
+											{description}
+										</p>
+									)}
+									<div className='mt-2 text-xs text-text-light'>
+										<span className='font-semibold text-text-dark mr-1'>
+											{t("Артикул", "SKU")}:
+										</span>
+										<span className='text-text-dark'>{product.sku}</span>
 									</div>
-									<button
-										className='p-2 rounded-full border border-border hover:bg-surface-light transition'
-										onClick={() => {
-											toggleFavorite(product);
+								</div>
+								<button
+									className='p-2 rounded-full border border-border hover:bg-surface-light transition'
+									onClick={() => {
+										toggleFavorite(product);
 										setFav((prev) => !prev);
 									}}
 									aria-label='favorite'
@@ -355,79 +361,75 @@ export function ProductDetail() {
 							</div>
 
 							{/* CTA */}
-								<div className='space-y-4'>
-									<button
-										onClick={handleAddToCart}
-										disabled={isOutOfStock}
-										className={`w-full h-12 rounded-full text-sm font-semibold transition-all shadow-sm ${
-											isOutOfStock
-												? "bg-gray-200 text-text-light cursor-not-allowed"
-												: "bg-error text-white hover:bg-error/90 active:scale-[0.99]"
-										}`}
-									>
-										{t("Добавить в корзину", "Add to cart")}
-									</button>
-								</div>
+							<div className='space-y-4'>
+								<button
+									onClick={handleAddToCart}
+									disabled={isOutOfStock}
+									className={`w-full h-12 rounded-full text-sm font-semibold transition-all shadow-sm ${
+										isOutOfStock
+											? "bg-gray-200 text-text-light cursor-not-allowed"
+											: "bg-error text-white hover:bg-error/90 active:scale-[0.99]"
+									}`}
+								>
+									{t("Добавить в корзину", "Add to cart")}
+								</button>
+							</div>
 						</div>
 
 						{/* Divider */}
 						<div className='h-px bg-border' />
 
 						{/* Store pickup & delivery */}
-							<section className='space-y-5 text-sm bg-white border border-border rounded-2xl p-5 shadow-sm'>
-							{/* Самовывоз */}
-							<div>
-								<h3 className='font-semibold mb-1'>
-									{t("Самовывоз из магазина", "Store pickup")}
-								</h3>
-								<p className='text-text-dark'>
-									{t(
-										"Вы можете забрать свой заказ в нашем магазине.",
-										"You can pick up your order in our store."
-									)}
-								</p>
-								<div className='mt-2 space-y-0.5 text-text-dark'>
-									<p>г. Иваново</p>
-									<p>ТРЦ «Серебряный город», 3 этаж, магазин №5</p>
+						<section className='space-y-4 text-sm bg-white border border-border rounded-2xl p-5 shadow-sm'>
+							<h3 className='font-semibold text-base'>
+								{t("Доставка и самовывоз", "Delivery & pickup")}
+							</h3>
+
+							<div className='flex items-start gap-3'>
+								<MapPin className='w-5 h-5 text-text-light mt-0.5' />
+								<div className='space-y-1'>
+									<p className='text-text-dark font-medium'>
+										{t("Самовывоз из магазина", "Store pickup")}
+									</p>
+									<p className='text-text-dark'>
+										{t(
+											"г. Иваново, ТРЦ «Серебряный город», 3 этаж, магазин №5.",
+											"Ivanovo, Serebryany Gorod Mall, 3rd floor, store #5."
+										)}
+									</p>
+									<p className='text-xs text-text-light'>
+										{t("Готовим к выдаче в день заказа.", "Ready same day.")}
+									</p>
 								</div>
-									<div className='mt-3 h-40 rounded-xl border border-border overflow-hidden bg-surface-light flex items-center justify-center text-xs text-text-light'>
-										<MapPin className='w-4 h-4 mr-1' />
-										<span>{t("Самовывоз доступен", "Pickup available")}</span>
-									</div>
 							</div>
 
-								{/* Delivery note */}
-								<div className='flex items-start gap-2'>
-									<RefreshCw className='w-4 h-4 text-text-light mt-0.5' />
-									<p className='text-text-dark text-xs'>
+							<div className='flex items-start gap-3'>
+								<Truck className='w-5 h-5 text-text-light mt-0.5' />
+								<div className='space-y-1'>
+									<p className='text-text-dark font-medium'>
+										{t("Курьерская доставка", "Courier delivery")}
+									</p>
+									<p className='text-text-dark'>
 										{t(
-											"Доступна курьерская доставка и самовывоз. Подтвердим пункт выдачи при оформлении заказа.",
-											"Courier delivery and pickup available. Pickup point will be confirmed at checkout."
+											"По Иваново 1–2 дня, по России 2–5 дней. В регионах может занять на 1–3 дня дольше — уточним при оформлении.",
+											"1–2 days in Ivanovo, 2–5 days across Russia. Regional delivery may take 1–3 extra days — we confirm at checkout."
 										)}
 									</p>
 								</div>
+							</div>
 
-							{/* Courier + payment */}
-							<div className='space-y-3'>
-								<div className='flex items-start gap-3'>
-									<Truck className='w-5 h-5 text-text-light mt-0.5' />
-									<div>
-										<p className='font-semibold text-text-dark mb-0.5'>
-											{t("Курьерская доставка", "Courier delivery")}
-										</p>
-										<p className='text-xs text-text-light'>
-											{t("По Иваново 1–2 дня.", "1–2 days in Ivanovo.")}
-										</p>
-									</div>
-								</div>
-								<div className='text-xs text-text-dark'>
-									<p className='font-semibold mb-0.5'>
+							<div className='flex items-start gap-3'>
+								<RefreshCw className='w-5 h-5 text-text-light mt-0.5' />
+								<div className='space-y-1'>
+									<p className='text-text-dark font-medium'>
 										{t("Оплата", "Payment")}
 									</p>
-									<ul className='list-disc list-inside space-y-0.5'>
-										<li>{t("Картой онлайн", "Card online")}</li>
-										<li>{t("Картой при получении", "Card on delivery")}</li>
-									</ul>
+									<p className='text-text-dark'>
+										{t(
+											"Картой онлайн или при получении. Подтверждаем пункт выдачи/адрес на шаге оформления.",
+											"Pay by card online or on delivery. Pickup point/address confirmed at checkout."
+										)}
+									</p>
 								</div>
 							</div>
 						</section>
@@ -436,17 +438,7 @@ export function ProductDetail() {
 						<div className='h-px bg-border' />
 
 							{/* Meta / details */}
-							<section className='space-y-3 text-sm bg-white border border-border rounded-2xl p-5 shadow-sm'>
-							{description && (
-								<div>
-									<p className='text-text-light mb-1'>
-										{t("Описание", "Description")}
-									</p>
-									<p className='text-text-dark leading-relaxed'>
-										{description}
-									</p>
-								</div>
-							)}
+						<section className='space-y-3 text-sm bg-white border border-border rounded-2xl p-5 shadow-sm'>
 							{material && (
 								<div>
 									<p className='text-text-light mb-1'>
@@ -461,10 +453,6 @@ export function ProductDetail() {
 									<p className='text-text-dark'>{color}</p>
 								</div>
 							)}
-							<div>
-								<p className='text-text-light mb-1'>{t("Артикул", "SKU")}</p>
-								<p className='text-text-dark'>{product.sku}</p>
-							</div>
 						</section>
 					</div>
 				</div>
